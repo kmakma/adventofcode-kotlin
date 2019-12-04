@@ -1,7 +1,11 @@
 package io.github.kmakma.adventofcode
 
-abstract class Day(val year: Int, val day: Int, val descriptionTask1: String, val descriptionTask2: String) :
-    InputParser() {
+abstract class Day(
+    private val year: Int,
+    private val day: Int,
+    private val descriptionTask1: String = "unknown task",
+    private val descriptionTask2: String = "unknown task"
+) : InputParser() {
     abstract fun solve()
     abstract fun getInput(): Any
 
@@ -9,7 +13,7 @@ abstract class Day(val year: Int, val day: Int, val descriptionTask1: String, va
     var resultTask2: Any? = null
 
     override fun getFilePath(): String {
-        return if(day < 10) {
+        return if (day < 10) {
             "input/$year/0$day.txt"
         } else {
             "input/$year/$day.txt"
