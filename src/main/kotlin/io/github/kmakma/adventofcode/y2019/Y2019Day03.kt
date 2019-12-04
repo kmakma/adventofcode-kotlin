@@ -1,24 +1,31 @@
 package io.github.kmakma.adventofcode.y2019
 
-class Y2019Day03 : Y2019Day(
+class Y2019Day03() : Y2019Day(
     3,
     "Distance to closest intersection of wires",
-    "unknown task 2" // TODO describe task 2
+    "Fewest combined step to an intersection:"
 ) {
-    private lateinit var pathVectors: List<List<Point>>
+    private lateinit var wirePath1: List<Point>
+    private lateinit var wirePath2: List<Point>
+    private lateinit var intersections: Set<Point>
 
     override fun solve() {
-        parseInstructionsToVectors(getInput())
+        setPathsAndIntersection(getInput())
         resultTask1 = distanceNextIntersection()
-//            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        // todo fun
+        resultTask2 = fewestStepsToIntersection()
+    }
+
+    private fun setPathsAndIntersection(input: List<List<String>>) {
+        val pathVectors = parseInstructionsToVectors(input)
+        wirePath1 = tracePath(pathVectors[0])
+        wirePath2 = tracePath(pathVectors[1])
+        intersections = wirePath1.intersect(wirePath2)
     }
 
     override fun getInput(): List<List<String>> = csvLinesToLists()
 
-
-    private fun parseInstructionsToVectors(pathInstructions: List<List<String>>) {
-        pathVectors = pathInstructions.map { instrList -> instrList.map { instr -> parseInstructionToVector(instr) } }
+    private fun parseInstructionsToVectors(pathInstructions: List<List<String>>): List<List<Point>> {
+        return pathInstructions.map { instrList -> instrList.map { instr -> parseInstructionToVector(instr) } }
     }
 
     private fun parseInstructionToVector(instruction: String): Point {
@@ -34,11 +41,8 @@ class Y2019Day03 : Y2019Day(
     }
 
     private fun distanceNextIntersection(): Int {
-        val wirePath1 = tracePath(pathVectors[0])
-        val wirePath2 = tracePath(pathVectors[1])
-        val intersection = wirePath1.intersect(wirePath2)
-        var minDist: Int = 0
-        for (point in intersection) {
+        var minDist = 0
+        for (point in intersections) {
             if (point.length != 0 && (minDist == 0 || point.length < minDist)) {
                 minDist = point.length
             }
@@ -48,14 +52,26 @@ class Y2019Day03 : Y2019Day(
 
     private fun tracePath(vectors: List<Point>): List<Point> {
         val path = ArrayList<Point>()
-//        path.add(Point(0, 0))
-//        vectors.forEach { vector -> (path.last()..(path.last() + vector)).forEach { point -> path.add(point) } }
-        // TODO attention! duplicate values between vectors
         var nextPoint = Point(0, 0)
         vectors.forEach { vector ->
             (nextPoint until (nextPoint + vector)).forEach { point -> path.add(point) }
             nextPoint += vector
         }
         return path
+    }
+
+    private fun fewestStepsToIntersection(): Int {
+        var shortestPath = 0
+        for (point in intersections) {
+            val currentSteps = combinedStepsFor(point)
+            if (currentSteps != 0 && (shortestPath == 0 || currentSteps < shortestPath)) {
+                shortestPath = currentSteps
+            }
+        }
+        return shortestPath
+    }
+
+    private fun combinedStepsFor(point: Point): Int {
+        return wirePath1.indexOf(point) + wirePath2.indexOf(point)
     }
 }
