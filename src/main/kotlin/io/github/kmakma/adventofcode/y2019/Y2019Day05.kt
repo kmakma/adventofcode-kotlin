@@ -5,16 +5,22 @@ class Y2019Day05 : Y2019Day(
     "Diagnostic code for air conditioner (systemID=1):",
     "Diagnostic code for thermal radiator (systemID=5)"
 ) {
-
-    private lateinit var intcodeComputer: IntcodeComputer
-
+    private lateinit var inputString: String
 
     override fun solve() {
-        intcodeComputer = IntcodeComputer.parse(getInput(), ComputerVesion.IO)
-        resultTask1 = intcodeComputer.runForSystem(1).last()
-//        intcodeComputer = IntcodeComputer.parse(getInput(), ComputerVesion.JUMP_COMPARISONS)
-//        println("task2" + intcodeComputer.runForSystem(5).last())
-//        TODO("not implemented")
+        inputString = getInput()
+        resultTask1 = diagnosticsOnAirConditioner()
+        resultTask1 = diagnosticsOnThermalRadiator()
+    }
+
+    private fun diagnosticsOnAirConditioner(): Int {
+        val intcodeComputer = IntcodeComputer.parse(inputString, ComputerVersion.IO)
+        return intcodeComputer.runForSystem(1).last()
+    }
+
+    private fun diagnosticsOnThermalRadiator(): Int {
+        val intcodeComputer = IntcodeComputer.parse(inputString, ComputerVersion.JUMPS_COMPARISONS)
+        return intcodeComputer.runForSystem(5).last()
     }
 
     override fun getInput(): String {

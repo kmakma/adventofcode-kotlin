@@ -1,17 +1,17 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.y2019.ComputerVesion.BASIC
-import io.github.kmakma.adventofcode.y2019.ComputerVesion.IO
+import io.github.kmakma.adventofcode.y2019.ComputerVersion.*
 import io.github.kmakma.adventofcode.y2019.IntcodeComputer.ParameterMode.IMMEDIATE
 import io.github.kmakma.adventofcode.y2019.IntcodeComputer.ParameterMode.POSITION
 
-class IntcodeComputer(private val intcodeProgram: List<Int>, private val version: ComputerVesion) {
+class IntcodeComputer(private val intcodeProgram: List<Int>, private val version: ComputerVersion) {
 
     private lateinit var runningProgram: MutableList<Int>
 
     private lateinit var outputList: MutableList<Int>
     private var systemID: Int = 0
 
+    private val startPoint = 0
     private val terminationCode = -1
     private val unknownCode = -2
 
@@ -33,8 +33,9 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
             runningProgram[2] = verb
         }
         val inputCode = buildInputCode(noun, verb)
-        var pointer = 0
+        var pointer = startPoint
         while (pointer != terminationCode) {
+            println(pointer)
             pointer = executeOpcode(pointer)
             if (pointer == unknownCode) {
                 error("IntcodeProgram: encountered an unknown opcode")
@@ -79,6 +80,8 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
         val p1 = value % 1000 / 100
         val p2 = value % 10000 / 1000
         val p3 = value % 100000 / 10000
+        if (p1 > 1 || p2 > 1 || p3 > 1)
+            println("error")
         return Opcode(pointer, opcode, ParameterMode.get(p1), ParameterMode.get(p2), ParameterMode.get(p3))
     }
 
@@ -102,7 +105,7 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
         return when (version) {
             BASIC -> executeBasicOpcode(opcode)
             IO -> executeIOOpcode(opcode)
-
+            JUMPS_COMPARISONS -> executeJumpsCompsOpcode(opcode)
         }
     }
 
@@ -127,6 +130,19 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
         }
     }
 
+    private fun executeJumpsCompsOpcode(opcode: Opcode): Int {
+        val newPointer = executeIOOpcode(opcode)
+        if (newPointer != unknownCode || newPointer == terminationCode) {
+            return newPointer
+        }
+        return when (opcode.opcode) {
+            5 -> opcodeJumpIfTrue(opcode)
+            6 -> opcodeJumpIfFalse(opcode)
+            7 -> opcodeLessThan(opcode)
+            8 -> opcodeEquals(opcode)
+            else -> unknownCode
+        }
+    }
 
     // opcode function - operations/actions
 
@@ -172,6 +188,63 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
         return opcode.pointer + 2
     }
 
+    /**
+     * opcode == 5
+     */
+    private fun opcodeJumpIfTrue(opcode: Opcode): Int {
+        return if (runningProgram[programPointer(opcode.pointer + 1, opcode.firstParameter)] != 0) {
+            runningProgram[programPointer(opcode.pointer + 2, opcode.secondParameter)]
+        } else {
+            opcode.pointer + 3
+        }
+    }
+
+    /**
+     * opcode == 6
+     */
+    private fun opcodeJumpIfFalse(opcode: Opcode): Int {
+        return if (runningProgram[programPointer(opcode.pointer + 1, opcode.firstParameter)] == 0) {
+            runningProgram[programPointer(opcode.pointer + 2, opcode.secondParameter)]
+        } else {
+            opcode.pointer + 3
+        }
+    }
+
+    /**
+     * opcode == 7
+     */
+    private fun opcodeLessThan(opcode: Opcode): Int {
+        val newPointer = programPointer(opcode.pointer + 3, opcode.thirdParameter)
+//        if (runningProgram[opcode.pointer + 1] < runningProgram[opcode.pointer + 2]) {
+        if (runningProgram[programPointer(
+                opcode.pointer + 1,
+                opcode.firstParameter
+            )] < runningProgram[programPointer(opcode.pointer + 2, opcode.secondParameter)]
+        ) {
+            runningProgram[newPointer] = 1
+        } else {
+            runningProgram[newPointer] = 0
+        }
+        return opcode.pointer + 4
+    }
+
+    /**
+     * opcode == 8
+     */
+    private fun opcodeEquals(opcode: Opcode): Int {
+        val newPointer = programPointer(opcode.pointer + 3, opcode.thirdParameter)
+        if (runningProgram[programPointer(
+                opcode.pointer + 1,
+                opcode.firstParameter
+            )] == runningProgram[programPointer(opcode.pointer + 2, opcode.secondParameter)]
+        ) {
+            runningProgram[newPointer] = 1
+        } else {
+            runningProgram[newPointer] = 0
+        }
+        return opcode.pointer + 4
+    }
+
 
     // enum and data classes
 
@@ -200,7 +273,7 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
     )
 
     companion object {
-        fun parse(program: String, version: ComputerVesion = BASIC): IntcodeComputer {
+        fun parse(program: String, version: ComputerVersion = BASIC): IntcodeComputer {
             return IntcodeComputer(program.split(",").map { it.toInt() }, version)
         }
     }
@@ -211,6 +284,6 @@ class ExecutedProgram(val baseProgram: List<Int>, val inputCode: Int? = null, va
     fun inputCode() = inputCode.toString().padStart(4, '0')
 }
 
-enum class ComputerVesion {
-    BASIC, IO
+enum class ComputerVersion {
+    BASIC, IO, JUMPS_COMPARISONS
 }
