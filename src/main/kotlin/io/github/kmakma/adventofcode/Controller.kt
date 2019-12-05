@@ -39,15 +39,15 @@ class MainController {
         |
         | Choose a year or action:
         |  [ ] "2015".."$currentAoCYear" => go to year
+        |  [ ] "2015".."$currentAoCYear" ("2015".."$currentAoCYear")* => execute tasks multiple years
+        |  [ ] "*" => execute all tasks from all years (2015..$currentAoCYear)
         |  [ ] no input => execute current (or latest) AoC day: $currentAoCYear-12-$currentAoCDay
-        |  [ ] "*" => execute all tasks from all years
         |  [ ] "exit" => end program
         | Input: 
         """.trimMargin()
 
     private val invalidYearAction = " Not a year or action!"
     private val unknownYear = " Year not in known range!"
-    private val notImplementedYear = " Year not implemented yet!"
     private val exiting = "Stopping program..."
 
     fun start() {
@@ -69,33 +69,47 @@ class MainController {
         println(chooseYearActions)
         val input = readLine()
         val year = input?.toIntOrNull()
-        // TODO add "[year] [day]*|"*"" to execute selected/all day from a year
+        val years = input?.split(" ")?.mapNotNull { it.toIntOrNull() }
         when {
             input == "exit" -> stop()
-            input == "*" -> print("not implemented :P") // TODO implement all years all tasks execution
-            input.isNullOrBlank() -> startYearController(currentAoCYear)//, currentAoCDay)
+            input == "*" -> executeAllYears()
+            input.isNullOrBlank() -> startYearController(currentAoCYear, currentAoCDay)
+            years != null && years.size > 1 -> executeYears(years)
             year != null -> startYearController(year)
             else -> println(invalidYearAction)
         }
     }
 
-    private fun startYearController(year: Int) {
-        val yearController: YearController = when (year) {
+    private fun executeAllYears() = executeYears(2015..currentAoCYear)
+
+    private fun executeYears(years: Iterable<Int>) {
+        years.forEach { getYearController(it)?.execute() }
+    }
+
+    private fun startYearController(year: Int, day: Int = 0) {
+        val yearController = getYearController(year) ?: return
+        if (yearController.start(day) == EXIT_PROGRAM) {
+            stop()
+        }
+    }
+
+    private fun getYearController(year: Int): YearController? {
+        return when (year) {
             2015, 2016, 2017, 2018 -> {
-                println(notImplementedYear)
-                return
+                println(notImplementedYear(year))
+                null
             }
             2019 -> ControllerY2019()
             else -> {
                 println(unknownYear)
-                return
+                null
             }
         }
-        // TODO feed controler info before start, like:
-        //    if day > 0 auto open day (tell the yC so)
-        if (yearController.start() == EXIT_PROGRAM) {
-            stop()
-        }
+    }
+
+
+    private fun notImplementedYear(year: Int) {
+        println(" Year $year not implemented yet!")
     }
 }
 
@@ -121,16 +135,26 @@ abstract class YearController {
         get() = """
         | Choose a day or action
         |  [ ] "1".."25" => execute tasks of one day
+        |  [ ] "1".."25" ("1".."25")* => execute multiple days
+        |  [ ] "*" => execute all days$allDaysLimiter
         |  [ ] no input => execute current/latest AoC day: $year-12-$currentDay
-        |  [ ] "*" => execute all days
         |  [ ] "back" => back to year selection
         |  [ ] "exit" => end program
         | Input: 
         """.trimMargin()
     private val invalidDayAction = " Not a day or action!"
     private val unknownDay = " Day not in range (1..25)!"
+    private val allDaysLimiter: String
+        get() {
+            return if (year == currentAoCYear) {
+                " until today (1..$currentDay)"
+            } else ""
+        }
 
-    fun start(): ControllerExitStatus {
+    fun start(day: Int = 0): ControllerExitStatus {
+        if (day in 1..25) {
+            executeDay(day)
+        }
         var exitStatus = IDLE
         while (exitStatus != EXIT_YEAR && exitStatus != EXIT_PROGRAM) {
             exitStatus = requestDayInput()
@@ -138,20 +162,22 @@ abstract class YearController {
         return exitStatus
     }
 
+    fun execute() {
+        println(header)
+        executeAllDays()
+    }
+
     private fun requestDayInput(): ControllerExitStatus {
         println(header)
         println(chooseDayActions)
         val input = readLine()
         val day = input?.toIntOrNull()
-        // TODO implement ranges of days
+        val days = input?.split(" ")?.mapNotNull { it.toIntOrNull() }
         return when {
             input == "exit" -> EXIT_PROGRAM
             input == "back" -> EXIT_YEAR
-            input == "*" -> {
-                // TODO implement "*" days
-                println("not yet implemented :P")
-                IDLE
-            }
+            input == "*" -> executeAllDays()
+            days != null && days.size > 1 -> executeDays(days)
             input.isNullOrBlank() -> executeDay(currentDay)
             day != null -> executeDay(day)
             else -> {
@@ -159,6 +185,19 @@ abstract class YearController {
                 IDLE
             }
         }
+    }
+
+    private fun executeAllDays(): ControllerExitStatus {
+        return if (year == currentAoCYear) {
+            executeDays(1..currentDay)
+        } else {
+            executeDays(1..25)
+        }
+    }
+
+    private fun executeDays(days: Iterable<Int>): ControllerExitStatus {
+        days.forEach { executeDay(it) }
+        return IDLE
     }
 
     private fun executeDay(day: Int): ControllerExitStatus {

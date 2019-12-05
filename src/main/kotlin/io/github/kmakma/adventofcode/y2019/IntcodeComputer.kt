@@ -35,7 +35,6 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
         val inputCode = buildInputCode(noun, verb)
         var pointer = startPoint
         while (pointer != terminationCode) {
-            println(pointer)
             pointer = executeOpcode(pointer)
             if (pointer == unknownCode) {
                 error("IntcodeProgram: encountered an unknown opcode")
