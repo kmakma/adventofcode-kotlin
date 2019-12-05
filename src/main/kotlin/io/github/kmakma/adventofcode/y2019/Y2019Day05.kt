@@ -10,7 +10,7 @@ class Y2019Day05 : Y2019Day(
     override fun solve() {
         inputString = getInput()
         resultTask1 = diagnosticsOnAirConditioner()
-        resultTask1 = diagnosticsOnThermalRadiator()
+        resultTask2 = diagnosticsOnThermalRadiator()
     }
 
     private fun diagnosticsOnAirConditioner(): Int {
