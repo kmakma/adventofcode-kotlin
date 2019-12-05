@@ -66,7 +66,7 @@ class MainController {
     }
 
     private fun requestYearInput() {
-        print(chooseYearActions)
+        println(chooseYearActions)
         val input = readLine()
         val year = input?.toIntOrNull()
         // TODO add "[year] [day]*|"*"" to execute selected/all day from a year
@@ -140,7 +140,7 @@ abstract class YearController {
 
     private fun requestDayInput(): ControllerExitStatus {
         println(header)
-        print(chooseDayActions)
+        println(chooseDayActions)
         val input = readLine()
         val day = input?.toIntOrNull()
         // TODO implement ranges of days

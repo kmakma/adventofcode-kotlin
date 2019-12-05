@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    application
     kotlin("jvm") version "1.3.61"
+    application
 }
 
 group = "io.github.kmakma"
@@ -22,4 +22,26 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.register<Jar>("uberJar") {
+    group = "build"
+    manifest.attributes(
+        "Main-Class" to "io.github.kmakma.adventofcode.MainKt",
+        "Implementation-Title" to project.name,
+        "Implementation-Version" to project.version
+    )
+
+    archiveClassifier.set("uber")
+
+    from(sourceSets.main.get().output)
+
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
