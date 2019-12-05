@@ -18,29 +18,30 @@ application {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+//    implementation("com.github.ajalt:mordant:1.2.1")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tasks.register<Jar>("uberJar") {
-    group = "build"
-    manifest.attributes(
-        "Main-Class" to "io.github.kmakma.adventofcode.MainKt",
-        "Implementation-Title" to project.name,
-        "Implementation-Version" to project.version
-    )
-
-    archiveClassifier.set("uber")
-
-    from(sourceSets.main.get().output)
-
-    dependsOn(configurations.runtimeClasspath)
-    from({
-        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
-    })
-}
+//tasks.register<Jar>("uberJar") {
+//    group = "build"
+//    manifest.attributes(
+//        "Main-Class" to "io.github.kmakma.adventofcode.MainKt",
+//        "Implementation-Title" to project.name,
+//        "Implementation-Version" to project.version
+//    )
+//
+//    archiveClassifier.set("uber")
+//
+//    from(sourceSets.main.get().output)
+//
+//    dependsOn(configurations.runtimeClasspath)
+//    from({
+//        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+//    })
+//}
 
 tasks.named<JavaExec>("run") {
     standardInput = System.`in`
