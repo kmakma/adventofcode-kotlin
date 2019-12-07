@@ -16,4 +16,8 @@ abstract class InputParser {
     protected fun csvLinesToLists(): List<List<String>> {
         return linesToList().map { it.split(",") }
     }
+
+    protected fun firstCsvLineToList(): List<String> {
+        return linesToList().first().split(",")
+    }
 }

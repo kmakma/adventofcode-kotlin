@@ -8,8 +8,13 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
 
     private lateinit var runningProgram: MutableList<Int>
 
+    private var inputList: List<Int> = listOf()
+        set(value) {
+            field = value
+            inputIterator = value.listIterator()
+        }
+    private lateinit var inputIterator: ListIterator<Int>
     private lateinit var outputList: MutableList<Int>
-    private var systemID: Int = 0
 
     private val startPoint = 0
     private val terminationCode = -1
@@ -20,11 +25,12 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
     /**
      * Run [intcodeProgram] with replacing parameters at index 1 and 2 with [noun] and [verb]
      */
-    fun run(noun: Int? = null, verb: Int? = null, systemID: Int? = null): ExecutedProgram {
-        runningProgram = intcodeProgram.toMutableList()
+    fun run(noun: Int? = null, verb: Int? = null, input: List<Int>? = null): ExecutedProgram {
+        // TODO make run protected, do an overhaul
+        runningProgram = intcodeProgram.toMutableList() // TODO array instead
         outputList = mutableListOf()
-        if (systemID != null) {
-            this.systemID = systemID
+        if (input != null) {
+            inputList = input
         }
         if (noun != null) {
             runningProgram[1] = noun
@@ -58,8 +64,8 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
         return null
     }
 
-    fun runForSystem(systemID: Int): List<Int> {
-        run(systemID = systemID)
+    fun runInput(input: List<Int>): List<Int> {
+        run(input = input)
         return outputList
     }
 
@@ -94,6 +100,12 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
                 pointer
             }
         }
+    }
+
+    private fun getInput(): Int {
+//        if(!inputIterator.hasNext()) {
+            return inputIterator.next()
+//        } else
     }
 
 
@@ -173,7 +185,7 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
     private fun opcodeInput(opcode: Opcode): Int {
         // must not be [IMMEDIATE]
         val pointerIn = programPointer(opcode.pointer + 1, opcode.firstParameter, true)
-        runningProgram[pointerIn] = systemID
+        runningProgram[pointerIn] = getInput()
         return opcode.pointer + 2
     }
 
@@ -213,7 +225,7 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
      * opcode == 7
      */
     private fun opcodeLessThan(opcode: Opcode): Int {
-        val newPointer = programPointer(opcode.pointer + 3, opcode.thirdParameter)
+        val newPointer = programPointer(opcode.pointer + 3, opcode.thirdParameter, true)
 //        if (runningProgram[opcode.pointer + 1] < runningProgram[opcode.pointer + 2]) {
         if (runningProgram[programPointer(
                 opcode.pointer + 1,
@@ -231,7 +243,7 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
      * opcode == 8
      */
     private fun opcodeEquals(opcode: Opcode): Int {
-        val newPointer = programPointer(opcode.pointer + 3, opcode.thirdParameter)
+        val newPointer = programPointer(opcode.pointer + 3, opcode.thirdParameter, true)
         if (runningProgram[programPointer(
                 opcode.pointer + 1,
                 opcode.firstParameter
@@ -274,6 +286,10 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
     companion object {
         fun parse(program: String, version: ComputerVersion = BASIC): IntcodeComputer {
             return IntcodeComputer(program.split(",").map { it.toInt() }, version)
+        }
+
+        fun parse(program: List<String>, version: ComputerVersion): IntcodeComputer {
+            return IntcodeComputer(program.map { it.toInt() }, version)
         }
     }
 }

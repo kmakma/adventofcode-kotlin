@@ -8,7 +8,7 @@ class Y2019Day02 : Y2019Day(
     private lateinit var intcodeComputer: IntcodeComputer
 
     override fun solve() {
-        intcodeComputer = IntcodeComputer.parse(getInput())
+        intcodeComputer = IntcodeComputer.parse(getInput(), ComputerVersion.BASIC)
         resultTask1 = restoreProgramStatus()
         resultTask2 = completeGravityAssist()
     }
@@ -18,7 +18,7 @@ class Y2019Day02 : Y2019Day(
     }
 
     private fun restoreProgramStatus(): Int {
-        return intcodeComputer.run(12, 2).result()
+        return intcodeComputer.run(noun = 12, verb = 2).result()
     }
 
     override fun getInput(): String {

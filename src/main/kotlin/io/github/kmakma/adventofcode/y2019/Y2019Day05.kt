@@ -15,12 +15,12 @@ class Y2019Day05 : Y2019Day(
 
     private fun diagnosticsOnAirConditioner(): Int {
         val intcodeComputer = IntcodeComputer.parse(inputString, ComputerVersion.IO)
-        return intcodeComputer.runForSystem(1).last()
+        return intcodeComputer.runInput(listOf(1)).last()
     }
 
     private fun diagnosticsOnThermalRadiator(): Int {
         val intcodeComputer = IntcodeComputer.parse(inputString, ComputerVersion.JUMPS_COMPARISONS)
-        return intcodeComputer.runForSystem(5).last()
+        return intcodeComputer.runInput(listOf(5)).last()
     }
 
     override fun getInput(): String {
