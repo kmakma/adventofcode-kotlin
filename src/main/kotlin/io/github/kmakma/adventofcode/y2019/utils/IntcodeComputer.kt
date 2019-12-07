@@ -1,8 +1,8 @@
-package io.github.kmakma.adventofcode.y2019
+package io.github.kmakma.adventofcode.y2019.utils
 
-import io.github.kmakma.adventofcode.y2019.ComputerVersion.*
-import io.github.kmakma.adventofcode.y2019.IntcodeComputer.ParameterMode.IMMEDIATE
-import io.github.kmakma.adventofcode.y2019.IntcodeComputer.ParameterMode.POSITION
+import io.github.kmakma.adventofcode.y2019.utils.ComputerVersion.*
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.IMMEDIATE
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.POSITION
 
 class IntcodeComputer(private val intcodeProgram: List<Int>, private val version: ComputerVersion) {
 
@@ -46,7 +46,11 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
                 error("IntcodeProgram: encountered an unknown opcode")
             }
         }
-        return ExecutedProgram(intcodeProgram, inputCode, runningProgram)
+        return ExecutedProgram(
+            intcodeProgram,
+            inputCode,
+            runningProgram
+        )
     }
 
     /**
@@ -87,7 +91,13 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
         val p3 = value % 100000 / 10000
         if (p1 > 1 || p2 > 1 || p3 > 1)
             println("error")
-        return Opcode(pointer, opcode, ParameterMode.get(p1), ParameterMode.get(p2), ParameterMode.get(p3))
+        return Opcode(
+            pointer,
+            opcode,
+            ParameterMode.get(p1),
+            ParameterMode.get(p2),
+            ParameterMode.get(p3)
+        )
     }
 
     private fun programPointer(pointer: Int, parameterMode: ParameterMode, isWriting: Boolean = false): Int {
@@ -285,11 +295,17 @@ class IntcodeComputer(private val intcodeProgram: List<Int>, private val version
 
     companion object {
         fun parse(program: String, version: ComputerVersion = BASIC): IntcodeComputer {
-            return IntcodeComputer(program.split(",").map { it.toInt() }, version)
+            return IntcodeComputer(
+                program.split(",").map { it.toInt() },
+                version
+            )
         }
 
         fun parse(program: List<String>, version: ComputerVersion): IntcodeComputer {
-            return IntcodeComputer(program.map { it.toInt() }, version)
+            return IntcodeComputer(
+                program.map { it.toInt() },
+                version
+            )
         }
     }
 }

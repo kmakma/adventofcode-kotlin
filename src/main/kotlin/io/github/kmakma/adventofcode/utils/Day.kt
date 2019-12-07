@@ -1,4 +1,6 @@
-package io.github.kmakma.adventofcode
+package io.github.kmakma.adventofcode.utils
+
+import io.github.kmakma.adventofcode.utils.InputParser
 
 abstract class Day(
     private val year: Int,

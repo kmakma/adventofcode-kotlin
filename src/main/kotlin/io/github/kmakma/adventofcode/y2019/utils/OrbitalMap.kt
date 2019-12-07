@@ -1,4 +1,4 @@
-package io.github.kmakma.adventofcode.y2019
+package io.github.kmakma.adventofcode.y2019.utils
 
 class OrbitalMap {
     private val spaceObjects: MutableMap<String, SpaceObject> = mutableMapOf()
@@ -26,7 +26,11 @@ class OrbitalMap {
     }
 
     private fun getSpaceObject(soName: String): SpaceObject {
-        return spaceObjects.getOrPut(soName) { SpaceObject(soName) }
+        return spaceObjects.getOrPut(soName) {
+            SpaceObject(
+                soName
+            )
+        }
     }
 
     fun travelDistance(start: String, end: String): Int {

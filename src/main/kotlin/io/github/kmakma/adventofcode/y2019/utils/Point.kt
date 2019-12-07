@@ -1,4 +1,4 @@
-package io.github.kmakma.adventofcode.y2019
+package io.github.kmakma.adventofcode.y2019.utils
 
 import kotlin.math.abs
 
@@ -17,9 +17,11 @@ data class Point(val x: Int, val y: Int) : Comparable<Point> {
         return "($x,$y)"
     }
 
-    operator fun plus(vector: Point) = Point(x + vector.x, y + vector.y)
+    operator fun plus(vector: Point) =
+        Point(x + vector.x, y + vector.y)
 
-    operator fun rangeTo(other: Point) = PointProgression(this, other)
+    operator fun rangeTo(other: Point) =
+        PointProgression(this, other)
 
     infix fun until(to: Point): PointProgression {
         var newX = to.x
@@ -38,7 +40,10 @@ data class Point(val x: Int, val y: Int) : Comparable<Point> {
                 x < to.x -> newX--
             }
         }
-        return PointProgression(this, Point(newX, newY))
+        return PointProgression(
+            this,
+            Point(newX, newY)
+        )
     }
 }
 
@@ -55,7 +60,7 @@ class PointIterator(
     override fun next(): Point {
         val next = currentPoint
         if (currentPoint == endPointInclusive) {
-            hasNext = false;
+            hasNext = false
         } else {
             nextCurrentPoint()
         }
@@ -104,7 +109,9 @@ class PointProgression(
     override val endInclusive: Point,
     private val steps: Int = 1
 ) : Iterable<Point>, ClosedRange<Point> {
-    override fun iterator(): Iterator<Point> = PointIterator(start, endInclusive, steps)
+    override fun iterator(): Iterator<Point> =
+        PointIterator(start, endInclusive, steps)
 
-    infix fun step(stepSteps: Int) = PointProgression(start, endInclusive, stepSteps)
+    infix fun step(stepSteps: Int) =
+        PointProgression(start, endInclusive, stepSteps)
 }

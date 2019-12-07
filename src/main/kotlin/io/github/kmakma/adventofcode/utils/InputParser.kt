@@ -1,4 +1,4 @@
-package io.github.kmakma.adventofcode
+package io.github.kmakma.adventofcode.utils
 
 import java.io.File
 

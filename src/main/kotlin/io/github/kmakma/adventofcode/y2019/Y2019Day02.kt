@@ -1,5 +1,8 @@
 package io.github.kmakma.adventofcode.y2019
 
+import io.github.kmakma.adventofcode.y2019.utils.ComputerVersion
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
+
 class Y2019Day02 : Y2019Day(
     2,
     "Result (index = 0) for intcode program with set parameter:",

@@ -1,6 +1,6 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.Day
+import io.github.kmakma.adventofcode.utils.Day
 import io.github.kmakma.adventofcode.YearController
 
 class ControllerY2019 : YearController() {

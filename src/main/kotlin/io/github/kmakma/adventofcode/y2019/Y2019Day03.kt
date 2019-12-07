@@ -1,5 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
+import io.github.kmakma.adventofcode.y2019.utils.Point
+
 class Y2019Day03() : Y2019Day(
     3,
     "Distance to closest intersection of wires",

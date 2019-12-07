@@ -1,5 +1,8 @@
 package io.github.kmakma.adventofcode.y2019
 
+import io.github.kmakma.adventofcode.y2019.utils.ComputerVersion
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
+
 class Y2019Day05 : Y2019Day(
     5,
     "Diagnostic code for air conditioner (systemID=1):",

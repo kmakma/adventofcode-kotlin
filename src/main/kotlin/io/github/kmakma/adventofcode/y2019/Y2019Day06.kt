@@ -1,5 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
+import io.github.kmakma.adventofcode.y2019.utils.OrbitalMap
+
 class Y2019Day06 : Y2019Day(
     6,
     "Number of direct and indirect orbits:",

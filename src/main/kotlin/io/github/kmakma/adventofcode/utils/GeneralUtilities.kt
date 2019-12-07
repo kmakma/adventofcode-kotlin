@@ -1,4 +1,4 @@
-package io.github.kmakma.adventofcode.y2019
+package io.github.kmakma.adventofcode.utils
 
 fun listInAllOrders(a: List<Int>): List<List<Int>> {
 
@@ -9,5 +9,10 @@ private fun allOrders(ordered: Array<Int>, unordered: List<Int>): List<List<Int>
     if (unordered.size == 1) {
         return listOf(listOf(*ordered, unordered.first()))
     }
-    return unordered.flatMap { allOrders(arrayOf(*ordered, it), unordered.minus(it)) }
+    return unordered.flatMap {
+        allOrders(
+            arrayOf(*ordered, it),
+            unordered.minus(it)
+        )
+    }
 }
