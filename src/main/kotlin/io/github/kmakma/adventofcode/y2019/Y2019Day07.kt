@@ -1,6 +1,6 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.utils.listInAllOrders
+import io.github.kmakma.adventofcode.utils.allOrders
 import io.github.kmakma.adventofcode.y2019.utils.ComputerVersion.JUMPS_COMPARISONS
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
 
@@ -22,7 +22,7 @@ class Y2019Day07 : Y2019Day(
     }
 
     private fun solveT1(): Int {
-        val listOfInputOrders = listInAllOrders((0..4).toList())
+        val listOfInputOrders = (0..4).toList().allOrders()
         var maxOutputSignal = 0
         for (inputs in listOfInputOrders) {
             val outputSignal = calculateOutputSignal(inputs)

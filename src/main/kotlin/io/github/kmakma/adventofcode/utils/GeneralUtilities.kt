@@ -1,18 +1,15 @@
 package io.github.kmakma.adventofcode.utils
 
-fun listInAllOrders(a: List<Int>): List<List<Int>> {
-
-    return allOrders(arrayOf<Int>(), a.toMutableList())
+/**
+ * Returns lists with elements of the list ordered in all possible ways
+ */
+fun <E> List<E>.allOrders(): List<List<E>> {
+    return allOrders(unordered = this)
 }
 
-private fun allOrders(ordered: Array<Int>, unordered: List<Int>): List<List<Int>> {
+private fun <E> allOrders(ordered: List<E> = listOf(), unordered: List<E>): List<List<E>> {
     if (unordered.size == 1) {
-        return listOf(listOf(*ordered, unordered.first()))
+        return listOf(ordered + unordered.first())
     }
-    return unordered.flatMap {
-        allOrders(
-            arrayOf(*ordered, it),
-            unordered.minus(it)
-        )
-    }
+    return unordered.flatMap { allOrders(ordered + it, unordered - it) }
 }
