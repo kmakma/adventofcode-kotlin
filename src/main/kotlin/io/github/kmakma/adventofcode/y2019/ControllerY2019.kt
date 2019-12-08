@@ -1,7 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.utils.Day
 import io.github.kmakma.adventofcode.YearController
+import io.github.kmakma.adventofcode.utils.Day
 
 class ControllerY2019 : YearController() {
     override val year: Int = 2019
@@ -16,7 +16,8 @@ class ControllerY2019 : YearController() {
             5 -> Y2019Day05()
             6 -> Y2019Day06()
             7 -> Y2019Day07()
-            8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 -> null
+            8 -> Y2019Day08()
+            9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 -> null
             else -> null
         }
     }

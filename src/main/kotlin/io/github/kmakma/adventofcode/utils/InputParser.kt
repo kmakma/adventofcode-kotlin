@@ -10,7 +10,11 @@ abstract class InputParser {
         if (uri != null) {
             return File(uri.file).useLines { it.toList() }
         }
-        return ArrayList()
+        return emptyList()
+    }
+
+    protected fun firstLine(): String {
+        return linesToList().first()
     }
 
     protected fun csvLinesToLists(): List<List<String>> {
