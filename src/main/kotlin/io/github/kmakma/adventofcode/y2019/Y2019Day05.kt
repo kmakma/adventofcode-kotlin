@@ -1,7 +1,6 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.y2019.utils.ComputerVersion
-import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
+import io.github.kmakma.adventofcode.y2019.utils.DeprecatingIntcodeComputer
 
 class Y2019Day05 : Y2019Day(
     5,
@@ -17,12 +16,12 @@ class Y2019Day05 : Y2019Day(
     }
 
     private fun diagnosticsOnAirConditioner(): Int {
-        val intcodeComputer = IntcodeComputer.parse(inputString, ComputerVersion.IO)
+        val intcodeComputer = DeprecatingIntcodeComputer.parse(inputString)
         return intcodeComputer.runInput(listOf(1)).last()
     }
 
     private fun diagnosticsOnThermalRadiator(): Int {
-        val intcodeComputer = IntcodeComputer.parse(inputString, ComputerVersion.JUMPS_COMPARISONS)
+        val intcodeComputer = DeprecatingIntcodeComputer.parse(inputString)
         return intcodeComputer.runInput(listOf(5)).last()
     }
 

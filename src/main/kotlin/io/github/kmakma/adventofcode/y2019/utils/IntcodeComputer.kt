@@ -1,320 +1,263 @@
 package io.github.kmakma.adventofcode.y2019.utils
 
-import io.github.kmakma.adventofcode.y2019.utils.ComputerVersion.*
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ComputerStatus.*
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.OpCode.*
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.IMMEDIATE
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.POSITION
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 
-class IntcodeComputer(private val intcodeProgram: List<Int>, private val version: ComputerVersion) {
-
-    private lateinit var runningProgram: MutableList<Int>
-
-    private var inputList: List<Int> = listOf()
+internal class IntcodeComputer private constructor(
+    private val initialIntcodeProgram: List<Int>,
+    private val input: ComputerIO,
+    private val output: ComputerIO
+) {
+    private var instruction = Instruction(END, emptyList())
+    private var instructionPointer = 0
         set(value) {
             field = value
-            inputIterator = value.listIterator()
+            updateInstruction()
         }
-    private lateinit var inputIterator: ListIterator<Int>
-    private lateinit var outputList: MutableList<Int>
-
-    private val startPoint = 0
-    private val terminationCode = -1
-    private val unknownCode = -2
+    private var computerStatus: ComputerStatus = IDLE
+    private var currentProgram: MutableList<Int> = initialIntcodeProgram.toMutableList()
 
     // Public functions
 
-    /**
-     * Run [intcodeProgram] with replacing parameters at index 1 and 2 with [noun] and [verb]
-     */
-    fun run(noun: Int? = null, verb: Int? = null, input: List<Int>? = null): ExecutedProgram {
-        // TODO make run protected, do an overhaul
-        runningProgram = intcodeProgram.toMutableList() // TODO array instead
-        outputList = mutableListOf()
-        if (input != null) {
-            inputList = input
+    suspend fun run(): IntcodeComputer = coroutineScope {
+        when (computerStatus) {
+            IDLE -> computerStatus = RUNNING
+            TERMINATED, TERMINATING -> return@coroutineScope this@IntcodeComputer
+            RUNNING -> error("IntcodeComputer is already running!")
         }
-        if (noun != null) {
-            runningProgram[1] = noun
-        }
-        if (verb != null) {
-            runningProgram[2] = verb
-        }
-        val inputCode = buildInputCode(noun, verb)
-        var pointer = startPoint
-        while (pointer != terminationCode) {
-            pointer = executeOpcode(pointer)
-            if (pointer == unknownCode) {
-                error("IntcodeProgram: encountered an unknown opcode")
+        // TODO save program before running similar to intialIntcodeProgram
+        updateInstruction()
+        while (computerStatus != TERMINATING && computerStatus != TERMINATED) {
+            when (instruction.opCode) {
+                ADD -> add()
+                MUL -> multiply()
+                IN -> readInput()
+                OUT -> writeOutput()
+                JNZ -> jumpIfNotZero() // "jump-if-true"
+                JZ -> jumpIfZero() // "jump-if-false"
+                SETL -> setIfLessThen()
+                SETE -> setIfEquals()
+                END -> end()
             }
         }
-        return ExecutedProgram(
-            intcodeProgram,
-            inputCode,
-            runningProgram
-        )
+        finish()
+        return@coroutineScope this@IntcodeComputer
     }
 
-    /**
-     * find input (100 * noun + verb) where index=0 of executed program is [result]
-     */
-    fun calculateInputForResult(result: Int): Int? {
-        for (noun in 0..99) {
-            for (verb in 0..99) {
-                val executedProgram = run(noun, verb)
-                if (executedProgram.result() == result) {
-                    return executedProgram.inputCode
-                }
-            }
+    fun reset() {
+        // TODO computerStatus check
+        currentProgram = initialIntcodeProgram.toMutableList()
+        instructionPointer = 0
+        instruction = Instruction(END, emptyList())
+        computerStatus = IDLE
+    }
+
+    fun output(): List<Int> {
+        // TODO computerStatus check
+        return output.getOutput()
+    }
+
+    // TODO isRunning()
+
+    // Utility functions
+
+    private fun updateInstruction(pointer: Int? = null) {
+        var instructionCode = pointer ?: currentProgram[instructionPointer]
+        val opCode = (instructionCode % 100).toOpCode()
+        val parameterModes: MutableList<ParameterMode> = mutableListOf()
+        instructionCode /= 100
+        while (instructionCode > 0) {
+            parameterModes.add((instructionCode % 10).toParameterMode())
+            instructionCode /= 10
         }
-        return null
+        instruction = Instruction(opCode, parameterModes)
     }
 
-    fun runInput(input: List<Int>): List<Int> {
-        run(input = input)
-        return outputList
+    private fun pointer(offset: Int, writing: Boolean = false): Int {
+        val pMode = parameterMode(offset)
+        if (writing && pMode == IMMEDIATE) {
+            error("instruction at [${instructionPointer}] trying to write in immediate mode")
+        }
+        return when (pMode) {
+            POSITION -> currentProgram[instructionPointer + offset]
+            IMMEDIATE -> instructionPointer + offset
+        }
     }
 
-    // utility functions
+    private fun parameterMode(parameter: Int): ParameterMode {
+        return instruction.parameterModes.getOrElse(parameter - 1) { POSITION }
+    }
 
-    private fun buildInputCode(noun: Int?, verb: Int?): Int? {
-        return if (noun == null || verb == null) {
-            null
+    private fun terminate() {
+        computerStatus = TERMINATING
+    }
+
+    private fun finish() {
+        // TODO close output, maybe input?
+        computerStatus = TERMINATED
+    }
+
+    private fun Int.toOpCode() = when (this) {
+        1 -> ADD
+        2 -> MUL
+        3 -> IN
+        4 -> OUT
+        5 -> JNZ
+        6 -> JZ
+        7 -> SETL
+        8 -> SETE
+        99 -> END
+        else -> error("unknown opcode: $this")
+    }
+
+    private fun Int.toParameterMode() = when (this) {
+        0 -> POSITION
+        1 -> IMMEDIATE
+        else -> error("unknown parameter mode: $this")
+    }
+
+    // OpCode functions
+
+    private fun add() {
+        currentProgram[pointer(3, true)] = currentProgram[pointer(1)] + currentProgram[pointer(2)]
+        instructionPointer += ADD.values
+    }
+
+    private fun multiply() {
+        currentProgram[pointer(3, true)] = currentProgram[pointer(1)] * currentProgram[pointer(2)]
+        instructionPointer += MUL.values
+    }
+
+    private suspend fun readInput() {
+        // TODO check if open
+        currentProgram[pointer(1, true)] = input.receive()
+        instructionPointer += IN.values
+    }
+
+    private suspend fun writeOutput() {
+        output.send(currentProgram[pointer(1)])
+        instructionPointer += OUT.values
+    }
+
+    private fun jumpIfNotZero() {
+        instructionPointer = if (currentProgram[pointer(1)] != 0) {
+            currentProgram[pointer(2)]
         } else {
-            100 * noun + verb
+            instructionPointer + JNZ.values
         }
     }
 
-    private fun buildOpcode(pointer: Int): Opcode {
-        val value = runningProgram[pointer]
-        val opcode = value % 100
-        val p1 = value % 1000 / 100
-        val p2 = value % 10000 / 1000
-        val p3 = value % 100000 / 10000
-        if (p1 > 1 || p2 > 1 || p3 > 1)
-            println("error")
-        return Opcode(
-            pointer,
-            opcode,
-            ParameterMode.get(p1),
-            ParameterMode.get(p2),
-            ParameterMode.get(p3)
-        )
-    }
-
-    private fun programPointer(pointer: Int, parameterMode: ParameterMode, isWriting: Boolean = false): Int {
-        return when (parameterMode) {
-            POSITION -> runningProgram[pointer]
-            IMMEDIATE -> {
-                if (isWriting) {
-                    error("program is trying to write in IMMEDIATE mode")
-                }
-                pointer
-            }
-        }
-    }
-
-    private fun getInput(): Int {
-//        if(!inputIterator.hasNext()) {
-            return inputIterator.next()
-//        } else
-    }
-
-
-    // opcode functions - action decider
-
-    private fun executeOpcode(pointer: Int): Int {
-        val opcode = buildOpcode(pointer)
-        return when (version) {
-            BASIC -> executeBasicOpcode(opcode)
-            IO -> executeIOOpcode(opcode)
-            JUMPS_COMPARISONS -> executeJumpsCompsOpcode(opcode)
-        }
-    }
-
-    private fun executeBasicOpcode(opcode: Opcode): Int {
-        return when (opcode.opcode) {
-            1 -> opcodeSum(opcode)
-            2 -> opcodeMultiplication(opcode)
-            99 -> terminationCode
-            else -> unknownCode
-        }
-    }
-
-    private fun executeIOOpcode(opcode: Opcode): Int {
-        val newPointer = executeBasicOpcode(opcode)
-        if (newPointer != unknownCode || newPointer == terminationCode) {
-            return newPointer
-        }
-        return when (opcode.opcode) {
-            3 -> opcodeInput(opcode)
-            4 -> opcodeOutput(opcode)
-            else -> unknownCode
-        }
-    }
-
-    private fun executeJumpsCompsOpcode(opcode: Opcode): Int {
-        val newPointer = executeIOOpcode(opcode)
-        if (newPointer != unknownCode || newPointer == terminationCode) {
-            return newPointer
-        }
-        return when (opcode.opcode) {
-            5 -> opcodeJumpIfTrue(opcode)
-            6 -> opcodeJumpIfFalse(opcode)
-            7 -> opcodeLessThan(opcode)
-            8 -> opcodeEquals(opcode)
-            else -> unknownCode
-        }
-    }
-
-    // opcode function - operations/actions
-
-    /**
-     * opcode == 1
-     */
-    private fun opcodeSum(opcode: Opcode): Int {
-        val pointerToOperand1 = programPointer(opcode.pointer + 1, opcode.firstParameter)
-        val pointerToOperand2 = programPointer(opcode.pointer + 2, opcode.secondParameter)
-        val pointerToResult = programPointer(opcode.pointer + 3, opcode.thirdParameter, true)
-        runningProgram[pointerToResult] = runningProgram[pointerToOperand1] + runningProgram[pointerToOperand2]
-        return opcode.pointer + 4
-    }
-
-    /**
-     * opcode == 2
-     */
-    private fun opcodeMultiplication(opcode: Opcode): Int {
-        val pointerToOperand1 = programPointer(opcode.pointer + 1, opcode.firstParameter)
-        val pointerToOperand2 = programPointer(opcode.pointer + 2, opcode.secondParameter)
-        val pointerToResult = programPointer(opcode.pointer + 3, opcode.thirdParameter, true)
-        runningProgram[pointerToResult] = runningProgram[pointerToOperand1] * runningProgram[pointerToOperand2]
-        return opcode.pointer + 4
-    }
-
-    /**
-     * opcode == 3
-     */
-    private fun opcodeInput(opcode: Opcode): Int {
-        // must not be [IMMEDIATE]
-        val pointerIn = programPointer(opcode.pointer + 1, opcode.firstParameter, true)
-        runningProgram[pointerIn] = getInput()
-        return opcode.pointer + 2
-    }
-
-    /**
-     * opcode == 4
-     */
-    private fun opcodeOutput(opcode: Opcode): Int {
-        val pointerOut = programPointer(opcode.pointer + 1, opcode.firstParameter)
-//        println(runningProgram[pointerOut])
-        outputList.add(runningProgram[pointerOut])
-        return opcode.pointer + 2
-    }
-
-    /**
-     * opcode == 5
-     */
-    private fun opcodeJumpIfTrue(opcode: Opcode): Int {
-        return if (runningProgram[programPointer(opcode.pointer + 1, opcode.firstParameter)] != 0) {
-            runningProgram[programPointer(opcode.pointer + 2, opcode.secondParameter)]
+    private fun jumpIfZero() {
+        instructionPointer = if (currentProgram[pointer(1)] == 0) {
+            currentProgram[pointer(2)]
         } else {
-            opcode.pointer + 3
+            instructionPointer + JZ.values
         }
     }
 
-    /**
-     * opcode == 6
-     */
-    private fun opcodeJumpIfFalse(opcode: Opcode): Int {
-        return if (runningProgram[programPointer(opcode.pointer + 1, opcode.firstParameter)] == 0) {
-            runningProgram[programPointer(opcode.pointer + 2, opcode.secondParameter)]
+    private fun setIfLessThen() {
+        currentProgram[pointer(3, true)] = if (currentProgram[pointer(1)] < currentProgram[pointer(2)]) {
+            1
         } else {
-            opcode.pointer + 3
+            0
         }
     }
 
-    /**
-     * opcode == 7
-     */
-    private fun opcodeLessThan(opcode: Opcode): Int {
-        val newPointer = programPointer(opcode.pointer + 3, opcode.thirdParameter, true)
-//        if (runningProgram[opcode.pointer + 1] < runningProgram[opcode.pointer + 2]) {
-        if (runningProgram[programPointer(
-                opcode.pointer + 1,
-                opcode.firstParameter
-            )] < runningProgram[programPointer(opcode.pointer + 2, opcode.secondParameter)]
-        ) {
-            runningProgram[newPointer] = 1
+    private fun setIfEquals() {
+        currentProgram[pointer(3, true)] = if (currentProgram[pointer(1)] == currentProgram[pointer(2)]) {
+            1
         } else {
-            runningProgram[newPointer] = 0
+            0
         }
-        return opcode.pointer + 4
     }
 
-    /**
-     * opcode == 8
-     */
-    private fun opcodeEquals(opcode: Opcode): Int {
-        val newPointer = programPointer(opcode.pointer + 3, opcode.thirdParameter, true)
-        if (runningProgram[programPointer(
-                opcode.pointer + 1,
-                opcode.firstParameter
-            )] == runningProgram[programPointer(opcode.pointer + 2, opcode.secondParameter)]
-        ) {
-            runningProgram[newPointer] = 1
-        } else {
-            runningProgram[newPointer] = 0
-        }
-        return opcode.pointer + 4
+    private fun end() {
+        terminate()
+        instructionPointer += END.values
     }
 
+    // Classes
 
-    // enum and data classes
+    private enum class ComputerStatus { // TODO ComputerStatus necessary? or is running/terminated enough
+        IDLE, RUNNING, TERMINATING, TERMINATED
+    }
 
-    enum class ParameterMode {
+    private enum class OpCode(val values: Int) {
+        // add or multiply p1 and p2 to p3.POSITION
+        ADD(4),
+        MUL(4),
+        // input to p1.POS / output from p1
+        IN(2),
+        OUT(2),
+        // jump to p2 if p1 is not/is zero (true/false)
+        JNZ(3),
+        JZ(3),
+        // set 1 if true, else 0 to p3.POS: p1 < p2 / p1 == p2
+        SETL(4),
+        SETE(4),
+        // program termination
+        END(1)
+    }
+
+    private enum class ParameterMode {
+        // parameter is pointer to value
         POSITION,
-        IMMEDIATE;
+        // parameter is value
+        IMMEDIATE
+    }
 
-        companion object {
-            fun get(pmCode: Int): ParameterMode {
-                return when (pmCode) {
-                    0 -> POSITION
-                    1 -> IMMEDIATE
-                    else -> error("unknown parameter mode code ($pmCode)")
-                }
+    private data class Instruction(val opCode: OpCode, val parameterModes: List<ParameterMode>)
+
+    internal data class Builder(
+        var initialProgram: List<Int>? = null,
+        var input: ComputerIO? = null,
+        var output: ComputerIO? = null
+    ) {
+        fun program(initialProgram: List<Int>) = apply { this.initialProgram = initialProgram }
+        fun input(input: ComputerIO) = apply { this.input = input }
+        fun input(input: List<Int>) = apply { this.input = ComputerIO(input) }
+        fun output(output: ComputerIO) = apply { this.output = output }
+        fun parseProgram(initialProgram: List<String>) =
+            apply { this.initialProgram = initialProgram.map { it.toInt() } }
+
+        fun build(): IntcodeComputer {
+            if (initialProgram == null) {
+                error("IntcodeComputerV2.Builder: can't build computer without program!")
             }
-        }
-
-    }
-
-    data class Opcode(
-        val pointer: Int,
-        val opcode: Int,
-        val firstParameter: ParameterMode = POSITION,
-        val secondParameter: ParameterMode = POSITION,
-        val thirdParameter: ParameterMode = POSITION
-    )
-
-    companion object {
-        fun parse(program: String, version: ComputerVersion = BASIC): IntcodeComputer {
-            return IntcodeComputer(
-                program.split(",").map { it.toInt() },
-                version
-            )
-        }
-
-        fun parse(program: List<String>, version: ComputerVersion): IntcodeComputer {
-            return IntcodeComputer(
-                program.map { it.toInt() },
-                version
-            )
+            if (input == null) {
+                input = ComputerIO()
+            }
+            if (output == null) {
+                output = ComputerIO()
+            }
+            return IntcodeComputer(initialProgram!!, input!!, output!!)
         }
     }
 }
 
-class ExecutedProgram(val baseProgram: List<Int>, val inputCode: Int? = null, val outputProgram: List<Int>) {
-    fun result() = outputProgram.first()
-    fun inputCode() = inputCode.toString().padStart(4, '0')
-}
+internal class ComputerIO(input: List<Int>? = null) {
+    private val channel: Channel<Int> = Channel(Channel.UNLIMITED)
+    private val output: MutableList<Int> = mutableListOf()
 
-enum class ComputerVersion {
-    BASIC, IO, JUMPS_COMPARISONS
+    init {
+        if (!input.isNullOrEmpty()) {
+            runBlocking { for (x in input) channel.send(x) }
+        }
+    }
+
+    internal fun getOutput() = output.toList()
+
+    internal suspend fun send(send: Int) {
+        channel.send(send)
+        output.add(send)
+    }
+
+    internal suspend fun receive(): Int {
+        return channel.receive()
+    }
 }
