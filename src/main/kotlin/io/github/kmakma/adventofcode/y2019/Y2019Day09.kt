@@ -1,32 +1,23 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-class Y2019Day09 : Y2019Day(9, "T1", "T2") {
+@ExperimentalCoroutinesApi
+internal class Y2019Day09 : Y2019Day(9, "Sensor Boost") {
+    private lateinit var computerBuilder: IntcodeComputer.Builder
 
-    private lateinit var intcodeProgram: List<Long>
-    override fun solve() {
-        intcodeProgram = getInput()
-        resultTask1 = solveT1()
-        resultTask2 = solveT2()
+    override fun initializeDay() {
+        computerBuilder = IntcodeComputer.Builder(inputAsIntcodeProgram())
     }
 
-    private fun solveT1(): Long {
-        val computer = IntcodeComputer.Builder(intcodeProgram).input(listOf(1L)).build()
-        var output = 0L
-        runBlocking { output = computer.run().output().last() }
-        return output
+    override suspend fun solveTask1(): Long {
+        val computer = computerBuilder.input(listOf(1L)).build()
+        return computer.run().output().last()
     }
 
-    private fun solveT2():Long {
-        val computer=IntcodeComputer.Builder(intcodeProgram).input(listOf(2L)).build()
-        var output = 0L
-        runBlocking { output = computer.run().output().last() }
-        return output
-    }
-
-    override fun getInput(): List<Long> {
-        return inputAsIntcodeProgram()
+    override suspend fun solveTask2(): Long {
+        val computer = computerBuilder.input(listOf(2L)).build()
+        return computer.run().output().last()
     }
 }

@@ -1,28 +1,27 @@
 package io.github.kmakma.adventofcode.y2019
 
-class Y2019Day01 : Y2019Day(
+internal class Y2019Day01 : Y2019Day(
     1,
-    "Fuel for all modules:",
-    "Fuel for all modules and for the fuel itself:"
+    "The Tyranny of the Rocket Equation"
 ) {
     private lateinit var fuelForModules: List<Int>
 
-    override fun solve() {
-        fuelForModules = calculateFuelForModules(getInput())
-        resultTask1 = fuelForAllModules()
-        resultTask2 = totalFuel()
+    override fun initializeDay() {
+        fuelForModules = calculateFuelForModules(linesToList())
     }
 
-    override fun getInput(): List<String> = linesToList()
+    override suspend fun solveTask1(): Int {
+        return fuelForModules.sum()
+    }
+
+    override suspend fun solveTask2(): Int {
+        return totalFuel()
+    }
 
     private fun calculateFuelForModules(modules: List<String>): List<Int> {
         return modules
             .map { it.toInt() }
             .map { fuelForWeight(it) }
-    }
-
-    private fun fuelForAllModules(): Int {
-        return fuelForModules.sum()
     }
 
     private fun totalFuel(): Int {
