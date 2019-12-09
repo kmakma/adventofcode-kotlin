@@ -14,10 +14,6 @@ internal class IntcodeComputer private constructor(
     // all vars these vars have to be reset (on reset)
     private var instruction = Instruction(END, emptyList())
     private var instructionPointer = 0L
-        set(value) {
-            field = value
-            updateInstruction()
-        }
     private var computerStatus: ComputerStatus = IDLE
     private lateinit var currentProgramMap: MutableMap<Long, Long>
     private var relativeBase = 0L
@@ -35,8 +31,9 @@ internal class IntcodeComputer private constructor(
             RUNNING -> error("IntcodeComputer is already running!")
         }
         // TODO save program before running similar to intialIntcodeProgram
-        updateInstruction()
         while (computerStatus != TERMINATING && computerStatus != TERMINATED) {
+            updateInstruction()
+//            println("$this; point:$instructionPointer, $instruction") // todo delete line
             when (instruction.opCode) {
                 ADD -> add()
                 MUL -> multiply()
@@ -74,6 +71,9 @@ internal class IntcodeComputer private constructor(
 
     private fun updateInstruction() {
         var instructionCode: Long = currentProgramMap.getOrDefault(instructionPointer, 0)
+        if (instructionCode % 100 == 0L) {
+            println("fehler")
+        }
         val opCode = (instructionCode % 100).toOpCode()
         val parameterModes: MutableList<ParameterMode> = mutableListOf()
         instructionCode /= 100
@@ -153,11 +153,13 @@ internal class IntcodeComputer private constructor(
 
     private suspend fun readInput() {
         // TODO check if open
+        println("$this input from $input")
         currentProgramMap[pointer(1, true)] = input.receive()
         instructionPointer += IN.values
     }
 
     private suspend fun writeOutput() {
+        println("$this output to $output")
         output.send(value(1))
         instructionPointer += OUT.values
     }
@@ -185,7 +187,7 @@ internal class IntcodeComputer private constructor(
             } else {
                 0L
             }
-        instructionPointer+=SETL.values
+        instructionPointer += SETL.values
     }
 
     private fun setIfEquals() {
@@ -195,7 +197,7 @@ internal class IntcodeComputer private constructor(
             } else {
                 0L
             }
-        instructionPointer+=SETE.values
+        instructionPointer += SETE.values
     }
 
     private fun offsetRelativeBase() {

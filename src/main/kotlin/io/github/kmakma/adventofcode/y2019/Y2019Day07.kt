@@ -22,7 +22,7 @@ class Y2019Day07 : Y2019Day(
 
     private suspend fun solveB() = coroutineScope {
         initialProgram = inputAsIntcodeProgram()
-        resultTask1 = solveT1()
+//        resultTask1 = solveT1()
         resultTask2 = solveT2()
     }
 
@@ -30,6 +30,7 @@ class Y2019Day07 : Y2019Day(
         val listOfBaseValues = (5L..9L).toList().allOrders()
         var maxOutputSignal = 0L
         for (inputs in listOfBaseValues) {
+            println(inputs)
             val outputSignal = calculateOutputSignal(inputs, LOOP)
             if (outputSignal > maxOutputSignal) {
                 maxOutputSignal = outputSignal
@@ -56,11 +57,11 @@ class Y2019Day07 : Y2019Day(
             .buildEnvironment(baseValues.size, initialProgram, 0, baseValues, computerNetworkMode)
         val resultA = computerNetwork.run().result
 
-        for (input in baseValues) {
-            val computer = IntcodeComputer.Builder(initialProgram).input(listOf<Long>(input, output)).build()
-            computer.run()
-            output = computer.output().last()
-        }
+//        for (input in baseValues) {
+//            val computer = IntcodeComputer.Builder(initialProgram).input(listOf<Long>(input, output)).build()
+//            computer.run()
+//            output = computer.output().last()
+//        }
         return resultA
 //        return output
     }

@@ -23,7 +23,11 @@ internal class ComputerNetwork private constructor(
         //  run computers async
         //  have own status for overall work defered status awaiting stati of the other ones?
         val outputs = mutableListOf<Deferred<List<Long>>>()
+        val mode = mode
+        val comps = intcodeComputers
+        val platzhalter = 5
         for (computer in intcodeComputers) {
+            println(computer)
             outputs.add(async { computer.run().output() })
         }
         result = outputs.last().await().last()
