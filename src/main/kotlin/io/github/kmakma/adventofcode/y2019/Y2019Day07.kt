@@ -1,7 +1,10 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.utils.allOrders
-import io.github.kmakma.adventofcode.y2019.utils.DeprecatingIntcodeComputer
+import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork
+import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode
+import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.LOOP
+import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.SINGLE
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
@@ -11,28 +14,23 @@ class Y2019Day07 : Y2019Day(
     "t1",
     "t2"
 ) {
-    private lateinit var initialProgram: List<Int>
+    private lateinit var initialProgram: List<Long>
 
     override fun solve() {
         runBlocking { solveB() }
     }
 
     private suspend fun solveB() = coroutineScope {
-        initialProgram = getInput().map { it.toInt() }
+        initialProgram = inputAsIntcodeProgram()
         resultTask1 = solveT1()
         resultTask2 = solveT2()
     }
 
-    private fun solveT2(): Int {
-
-        return 0
-    }
-
-    private suspend fun solveT1(): Int {
-        val listOfInputOrders = (0..4).toList().allOrders()
-        var maxOutputSignal = 0
-        for (inputs in listOfInputOrders) {
-            val outputSignal = calculateOutputSignal(inputs)
+    private suspend fun solveT2(): Long {
+        val listOfBaseValues = (5L..9L).toList().allOrders()
+        var maxOutputSignal = 0L
+        for (inputs in listOfBaseValues) {
+            val outputSignal = calculateOutputSignal(inputs, LOOP)
             if (outputSignal > maxOutputSignal) {
                 maxOutputSignal = outputSignal
             }
@@ -40,20 +38,31 @@ class Y2019Day07 : Y2019Day(
         return maxOutputSignal
     }
 
-    private suspend fun calculateOutputSignal(inputs: List<Int>): Int {
-        var output = 0
-        for (input in inputs) {
-            println("starting deprecated comp with input: ($input, $output)")
-            DeprecatingIntcodeComputer(initialProgram).runInput(listOf(input, output))
-            println("done.")
+    private suspend fun solveT1(): Long {
+        val listOfInputOrders = (0L..4L).toList().allOrders()
+        var maxOutputSignal = 0L
+        for (inputs in listOfInputOrders) {
+            val outputSignal = calculateOutputSignal(inputs, SINGLE)
+            if (outputSignal > maxOutputSignal) {
+                maxOutputSignal = outputSignal
+            }
+        }
+        return maxOutputSignal
+    }
 
-            val computer = IntcodeComputer.Builder(initialProgram).input(listOf(input, output)).build()
-            println("starting new comp with input: ($input, $output)")
+    private suspend fun calculateOutputSignal(baseValues: List<Long>, computerNetworkMode: NetworkMode): Long {
+        var output = 0L
+        val computerNetwork = ComputerNetwork
+            .buildEnvironment(baseValues.size, initialProgram, 0, baseValues, computerNetworkMode)
+        val resultA = computerNetwork.run().result
+
+        for (input in baseValues) {
+            val computer = IntcodeComputer.Builder(initialProgram).input(listOf<Long>(input, output)).build()
             computer.run()
-            println("done.")
             output = computer.output().last()
         }
-        return output
+        return resultA
+//        return output
     }
 
     override fun getInput(): List<String> {

@@ -2,32 +2,36 @@ package io.github.kmakma.adventofcode.y2019.utils
 
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ComputerStatus.*
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.OpCode.*
-import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.IMMEDIATE
-import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.POSITION
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 
 internal class IntcodeComputer private constructor(
-    private val initialIntcodeProgram: List<Int>,
+    private val initialIntcodeProgram: List<Long>,
     private val input: ComputerIO,
     private val output: ComputerIO
 ) {
+    // all vars these vars have to be reset (on reset)
     private var instruction = Instruction(END, emptyList())
-    private var instructionPointer = 0
+    private var instructionPointer = 0L
         set(value) {
             field = value
             updateInstruction()
         }
     private var computerStatus: ComputerStatus = IDLE
-    private var currentProgram: MutableList<Int> = initialIntcodeProgram.toMutableList()
+    private lateinit var currentProgramMap: MutableMap<Long, Long>
+    private var relativeBase = 0L
+
+    init {
+        resetCurrentProgram()
+    }
 
     // Public functions
 
-    suspend fun run(): IntcodeComputer = coroutineScope {
+    suspend fun run(): IntcodeComputer {
         when (computerStatus) {
             IDLE -> computerStatus = RUNNING
-            TERMINATED, TERMINATING -> return@coroutineScope this@IntcodeComputer
+            TERMINATED, TERMINATING -> return this@IntcodeComputer
             RUNNING -> error("IntcodeComputer is already running!")
         }
         // TODO save program before running similar to intialIntcodeProgram
@@ -42,32 +46,34 @@ internal class IntcodeComputer private constructor(
                 JZ -> jumpIfZero() // "jump-if-false"
                 SETL -> setIfLessThen()
                 SETE -> setIfEquals()
+                REL -> offsetRelativeBase()
                 END -> end()
             }
         }
         finish()
-        return@coroutineScope this@IntcodeComputer
+        return this@IntcodeComputer
     }
 
     fun reset() {
         // TODO computerStatus check
-        currentProgram = initialIntcodeProgram.toMutableList()
+        resetCurrentProgram()
         instructionPointer = 0
+        relativeBase = 0
         instruction = Instruction(END, emptyList())
         computerStatus = IDLE
     }
 
-    fun output(): List<Int> {
+    fun output(): List<Long> {
         // TODO computerStatus check
         return output.getOutput()
     }
 
-    // TODO isRunning()
+    // TODO status()
 
     // Utility functions
 
-    private fun updateInstruction(pointer: Int? = null) {
-        var instructionCode = pointer ?: currentProgram[instructionPointer]
+    private fun updateInstruction() {
+        var instructionCode: Long = currentProgramMap.getOrDefault(instructionPointer, 0)
         val opCode = (instructionCode % 100).toOpCode()
         val parameterModes: MutableList<ParameterMode> = mutableListOf()
         instructionCode /= 100
@@ -78,15 +84,25 @@ internal class IntcodeComputer private constructor(
         instruction = Instruction(opCode, parameterModes)
     }
 
-    private fun pointer(offset: Int, writing: Boolean = false): Int {
+    private fun resetCurrentProgram() {
+        currentProgramMap =
+            initialIntcodeProgram.withIndex().map { it.index.toLong() to it.value }.toMap().toMutableMap()
+    }
+
+    private fun pointer(offset: Int, writing: Boolean = false): Long {
         val pMode = parameterMode(offset)
         if (writing && pMode == IMMEDIATE) {
-            error("instruction at [${instructionPointer}] trying to write in immediate mode")
+            error("instruction at [${instructionPointer}] trying to write in immediate mode") // TODO set error message and status = ABORT
         }
         return when (pMode) {
-            POSITION -> currentProgram[instructionPointer + offset]
+            POSITION -> currentProgramMap.getOrDefault(instructionPointer + offset, 0)
             IMMEDIATE -> instructionPointer + offset
+            RELATIVE -> currentProgramMap.getOrDefault(instructionPointer + offset, 0) + relativeBase
         }
+    }
+
+    private fun value(offset: Int): Long {
+        return currentProgramMap.getOrDefault(pointer(offset), 0)
     }
 
     private fun parameterMode(parameter: Int): ParameterMode {
@@ -102,7 +118,7 @@ internal class IntcodeComputer private constructor(
         computerStatus = TERMINATED
     }
 
-    private fun Int.toOpCode() = when (this) {
+    private fun Number.toOpCode() = when (this.toInt()) {
         1 -> ADD
         2 -> MUL
         3 -> IN
@@ -111,69 +127,80 @@ internal class IntcodeComputer private constructor(
         6 -> JZ
         7 -> SETL
         8 -> SETE
+        9 -> REL
         99 -> END
-        else -> error("unknown opcode: $this")
+        else -> error("unknown opcode: $this") // TODO seterrormessage and status aborted
     }
 
-    private fun Int.toParameterMode() = when (this) {
+    private fun Number.toParameterMode() = when (this.toInt()) {
         0 -> POSITION
         1 -> IMMEDIATE
-        else -> error("unknown parameter mode: $this")
+        2 -> RELATIVE
+        else -> error("unknown parameter mode: $this") // TODO seterrormessage and status aborted
     }
 
     // OpCode functions
 
     private fun add() {
-        currentProgram[pointer(3, true)] = currentProgram[pointer(1)] + currentProgram[pointer(2)]
+        currentProgramMap[pointer(3, true)] = value(1) + value(2)
         instructionPointer += ADD.values
     }
 
     private fun multiply() {
-        currentProgram[pointer(3, true)] = currentProgram[pointer(1)] * currentProgram[pointer(2)]
+        currentProgramMap[pointer(3, true)] = value(1) * value(2)
         instructionPointer += MUL.values
     }
 
     private suspend fun readInput() {
         // TODO check if open
-        currentProgram[pointer(1, true)] = input.receive()
+        currentProgramMap[pointer(1, true)] = input.receive()
         instructionPointer += IN.values
     }
 
     private suspend fun writeOutput() {
-        output.send(currentProgram[pointer(1)])
+        output.send(value(1))
         instructionPointer += OUT.values
     }
 
     private fun jumpIfNotZero() {
-        instructionPointer = if (currentProgram[pointer(1)] != 0) {
-            currentProgram[pointer(2)]
+        instructionPointer = if (value(1) != 0L) {
+            value(2)
         } else {
             instructionPointer + JNZ.values
         }
     }
 
     private fun jumpIfZero() {
-        instructionPointer = if (currentProgram[pointer(1)] == 0) {
-            currentProgram[pointer(2)]
+        instructionPointer = if (value(1) == 0L) {
+            value(2)
         } else {
             instructionPointer + JZ.values
         }
     }
 
     private fun setIfLessThen() {
-        currentProgram[pointer(3, true)] = if (currentProgram[pointer(1)] < currentProgram[pointer(2)]) {
-            1
-        } else {
-            0
-        }
+        currentProgramMap[pointer(3, true)] =
+            if (value(1) < value(2)) {
+                1L
+            } else {
+                0L
+            }
+        instructionPointer+=SETL.values
     }
 
     private fun setIfEquals() {
-        currentProgram[pointer(3, true)] = if (currentProgram[pointer(1)] == currentProgram[pointer(2)]) {
-            1
-        } else {
-            0
-        }
+        currentProgramMap[pointer(3, true)] =
+            if (value(1) == value(2)) {
+                1L
+            } else {
+                0L
+            }
+        instructionPointer+=SETE.values
+    }
+
+    private fun offsetRelativeBase() {
+        relativeBase += value(1)
+        instructionPointer += REL.values
     }
 
     private fun end() {
@@ -183,7 +210,7 @@ internal class IntcodeComputer private constructor(
 
     // Classes
 
-    private enum class ComputerStatus { // TODO ComputerStatus necessary? or is running/terminated enough
+    private enum class ComputerStatus {
         IDLE, RUNNING, TERMINATING, TERMINATED
     }
 
@@ -200,6 +227,8 @@ internal class IntcodeComputer private constructor(
         // set 1 if true, else 0 to p3.POS: p1 < p2 / p1 == p2
         SETL(4),
         SETE(4),
+        // offset relativeBase by p1
+        REL(2),
         // program termination
         END(1)
     }
@@ -208,22 +237,24 @@ internal class IntcodeComputer private constructor(
         // parameter is pointer to value
         POSITION,
         // parameter is value
-        IMMEDIATE
+        IMMEDIATE,
+        // parameter is pointer to value + [relativeBase]
+        RELATIVE
     }
 
     private data class Instruction(val opCode: OpCode, val parameterModes: List<ParameterMode>)
 
     internal data class Builder(
-        var initialProgram: List<Int>? = null,
+        var initialProgram: List<Long>? = null,
         var input: ComputerIO? = null,
         var output: ComputerIO? = null
     ) {
-        fun program(initialProgram: List<Int>) = apply { this.initialProgram = initialProgram }
+        fun program(initialProgram: List<Long>) = apply { this.initialProgram = initialProgram }
         fun input(input: ComputerIO) = apply { this.input = input }
-        fun input(input: List<Int>) = apply { this.input = ComputerIO(input) }
+        fun input(input: List<Long>) = apply { this.input = ComputerIO(input) }
         fun output(output: ComputerIO) = apply { this.output = output }
         fun parseProgram(initialProgram: List<String>) =
-            apply { this.initialProgram = initialProgram.map { it.toInt() } }
+            apply { this.initialProgram = initialProgram.map { it.toLong() } }
 
         fun build(): IntcodeComputer {
             if (initialProgram == null) {
@@ -240,9 +271,9 @@ internal class IntcodeComputer private constructor(
     }
 }
 
-internal class ComputerIO(input: List<Int>? = null) {
-    private val channel: Channel<Int> = Channel(Channel.UNLIMITED)
-    private val output: MutableList<Int> = mutableListOf()
+internal class ComputerIO(input: List<Long>? = null) {
+    private val channel: Channel<Long> = Channel(Channel.UNLIMITED)
+    private val output: MutableList<Long> = mutableListOf()
 
     init {
         if (!input.isNullOrEmpty()) {
@@ -252,12 +283,12 @@ internal class ComputerIO(input: List<Int>? = null) {
 
     internal fun getOutput() = output.toList()
 
-    internal suspend fun send(send: Int) {
+    internal suspend fun send(send: Long) {
         channel.send(send)
         output.add(send)
     }
 
-    internal suspend fun receive(): Int {
+    internal suspend fun receive(): Long {
         return channel.receive()
     }
 }
