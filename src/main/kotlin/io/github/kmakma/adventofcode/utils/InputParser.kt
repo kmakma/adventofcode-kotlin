@@ -17,11 +17,11 @@ abstract class InputParser {
         return linesToList().first()
     }
 
-    protected fun csvLinesToLists(): List<List<String>> {
-        return linesToList().map { it.split(",") }
+    protected fun csvLinesToLists(vararg delimiters: String = arrayOf(",")): List<List<String>> {
+        return linesToList().map { it.split(*delimiters) }
     }
 
-    protected fun firstCsvLineToList(): List<String> {
-        return linesToList().first().split(",")
+    protected fun firstCsvLineToList(vararg delimiters: String = arrayOf(",")): List<String> {
+        return linesToList().first().split(*delimiters)
     }
 }
