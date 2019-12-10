@@ -2,10 +2,9 @@ package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.Vector
 
-class Y2019Day03() : Y2019Day(
+internal class Y2019Day03() : Y2019Day(
     3,
-    "Distance to closest intersection of wires",
-    "Fewest combined step to an intersection:"
+    "Distance to closest intersection of wires"
 ) {
     private lateinit var wirePath1: List<Vector>
     private lateinit var wirePath2: List<Vector>
@@ -18,6 +17,16 @@ class Y2019Day03() : Y2019Day(
     override suspend fun solveTask1(): Any? {
         return super.solveTask1()
     }
+
+    override suspend fun solveTask2(): Any? {
+        return super.solveTask2()
+    }
+
+    //    override suspend fun solve() {
+//        setPathsAndIntersection(getInput())
+//        resultTask1 = distanceNextIntersection()
+//        resultTask2 = fewestStepsToIntersection()
+//    }
 
     private fun setPathsAndIntersection(input: List<List<String>>) {
         val pathVectors = parseInstructionsToVectors(input)
@@ -47,8 +56,8 @@ class Y2019Day03() : Y2019Day(
     private fun distanceNextIntersection(): Int {
         var minDist = 0
         for (point in intersections) {
-            if (point.length != 0 && (minDist == 0 || point.length < minDist)) {
-                minDist = point.length
+            if (point.manhattanDistance != 0 && (minDist == 0 || point.length < minDist)) {
+                minDist = point.manhattanDistance
             }
         }
         return minDist

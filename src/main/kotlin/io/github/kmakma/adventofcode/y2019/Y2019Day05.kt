@@ -2,10 +2,9 @@ package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.DeprecatingIntcodeComputer
 
-class Y2019Day05 : Y2019Day(
+internal class Y2019Day05 : Y2019Day(
     5,
-    "Diagnostic code for air conditioner (systemID=1):",
-    "Diagnostic code for thermal radiator (systemID=5)"
+    "Diagnostic code for air conditioner (systemID=1):"
 ) {
     private lateinit var inputString: String
 

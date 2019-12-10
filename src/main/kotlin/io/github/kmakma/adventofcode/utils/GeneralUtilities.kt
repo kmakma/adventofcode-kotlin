@@ -3,15 +3,16 @@ package io.github.kmakma.adventofcode.utils
 /**
  * Returns lists with elements of the list ordered in all possible ways
  */
-fun <E> List<E>.allOrders(): List<List<E>> {
-    return allOrders(unordered = this)
+fun <E> List<E>.allPermutations(): List<List<E>> {
+    return allPermutations(unordered = this)
 }
 
-private fun <E> allOrders(ordered: List<E> = listOf(), unordered: List<E>): List<List<E>> {
+
+private fun <E> allPermutations(ordered: List<E> = emptyList(), unordered: List<E>): List<List<E>> {
     if (unordered.size == 1) {
         return listOf(ordered + unordered.first())
     }
-    return unordered.flatMap { allOrders(ordered + it, unordered - it) }
+    return unordered.flatMap { allPermutations(ordered + it, unordered - it) }
 }
 
 /**

@@ -3,9 +3,11 @@ package io.github.kmakma.adventofcode.y2019.utils
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.Companion.buildEnvironment
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.LOOP
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.SINGLE
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import io.github.kmakma.adventofcode.y2019.utils.ComputerStatus.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 
 /**
  * Network of [IntcodeComputer]s, for larger/linked computations.
@@ -13,31 +15,33 @@ import kotlinx.coroutines.coroutineScope
  * Build with [buildEnvironment]
  */
 internal class ComputerNetwork private constructor(
-    val intcodeComputers: List<IntcodeComputer>,
-    val mode: NetworkMode
+    private val intcodeComputers: List<IntcodeComputer>,
+    private val mode: NetworkMode
 ) {
-    var result: Long = 0L
+    private var networkStatus = IDLE
 
+    @ExperimentalCoroutinesApi
     internal suspend fun run(): ComputerNetwork = coroutineScope {
-        // TODO
-        //  run computers async
-        //  have own status for overall work defered status awaiting stati of the other ones?
-        val outputs = mutableListOf<Deferred<List<Long>>>()
-        val mode = mode
-        val comps = intcodeComputers
-        val platzhalter = 5
-        for (computer in intcodeComputers) {
-            println(computer)
-            outputs.add(async { computer.run().output() })
+        when (networkStatus) {
+            IDLE -> networkStatus = RUNNING
+            RUNNING, TERMINATING -> error("ComputerNetwork is already running!")
+            TERMINATED -> return@coroutineScope this@ComputerNetwork
         }
-        result = outputs.last().await().last()
-
+        for (i in intcodeComputers.indices) { // TODO make list of deferred
+            withContext(Dispatchers.Default) { intcodeComputers[i].run() }
+        }
 
         return@coroutineScope this@ComputerNetwork
     }
 
-    internal fun finalOutput(): List<Long> {
-        // TODO check running status
+    internal fun lastOutput(): List<Long> {
+        when (networkStatus) {
+            IDLE -> error("Output not possible with a ComputerNetwork that didn't run yet!")
+            RUNNING -> error("Output not possible on running ComputerNetwork")
+            TERMINATING -> error("Output not possible on terminating ComputerNetwork")
+            TERMINATED -> { // proceed
+            }
+        }
         return intcodeComputers.last().output()
     }
 
@@ -75,10 +79,6 @@ internal class ComputerNetwork private constructor(
             val computerIOs = buildComputerIOs(size, ioBaseValues, firstInput, mode)
             val computers = buildComputers(size, initialComputerProgram, computerIOs, mode)
             return ComputerNetwork(computers, mode)
-
-
-            // todo depending on mode (loop) rotate list (first => last)
-
         }
 
         private fun buildComputerIOs(
@@ -88,7 +88,7 @@ internal class ComputerNetwork private constructor(
             mode: NetworkMode
         ): List<ComputerIO> {
             if (ioBaseValues.size > number) {
-                TODO("Error")
+                error("more base input values than computers/IOs")
             }
             val computerIOs = mutableListOf<ComputerIO>()
             // first computerIO
@@ -124,9 +124,11 @@ internal class ComputerNetwork private constructor(
                 SINGLE -> number
                 LOOP -> number - 1
             }
+            // build computers, except last one if mode is LOOP
             for (i in 0 until itEnd) {
                 computers.add(builder.input(computerIOs[i]).output(computerIOs[i + 1]).build())
             }
+            // if LOOP, than shall be true: lastComputer.output == firstComputer.input
             if (mode == LOOP) {
                 computers.add(builder.input(computerIOs[number - 1]).output(computerIOs.first()).build())
             }

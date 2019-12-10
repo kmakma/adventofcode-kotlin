@@ -2,12 +2,14 @@ package io.github.kmakma.adventofcode.y2019.utils
 
 import io.github.kmakma.adventofcode.utils.gcd
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
-    val length = abs(x) + abs(y)
+    val length = sqrt((x * x + y * y).toDouble())
+    val manhattanDistance = abs(x) + abs(y)
 
     fun shortest(): Vector {
-        val gcd = gcd(x, y)
+        val gcd = abs(gcd(x, y))
         return if (gcd != 0) {
             this / gcd
         } else {

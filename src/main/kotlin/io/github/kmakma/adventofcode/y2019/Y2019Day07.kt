@@ -1,18 +1,20 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.utils.allOrders
+import io.github.kmakma.adventofcode.utils.allPermutations
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.LOOP
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.SINGLE
-import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import kotlin.system.measureTimeMillis
 
-class Y2019Day07 : Y2019Day(
+@ExperimentalCoroutinesApi
+internal class Y2019Day07 : Y2019Day(
     7,
-    "t1",
-    "t2"
+    "t1"
 ) {
     private lateinit var initialProgram: List<Long>
 
@@ -21,49 +23,40 @@ class Y2019Day07 : Y2019Day(
     }
 
     private suspend fun solveB() = coroutineScope {
-        initialProgram = inputAsIntcodeProgram()
-//        resultTask1 = solveT1()
-        resultTask2 = solveT2()
-    }
-
-    private suspend fun solveT2(): Long {
-        val listOfBaseValues = (5L..9L).toList().allOrders()
-        var maxOutputSignal = 0L
-        for (inputs in listOfBaseValues) {
-            println(inputs)
-            val outputSignal = calculateOutputSignal(inputs, LOOP)
-            if (outputSignal > maxOutputSignal) {
-                maxOutputSignal = outputSignal
-            }
+        val timeTotal = measureTimeMillis {
+            val timeInit = measureTimeMillis { initialProgram = inputAsIntcodeProgram() }
+            val timeTask1 = async { measureTimeMillis { resultTask1 = solveT1() } }
+            val timeTask2 = async { measureTimeMillis { resultTask2 = solveT2() } }
+            println("timeInit:${timeInit},timeTask1:${timeTask1.await()}, timeTask2:${timeTask2.await()}")
         }
-        return maxOutputSignal
+        println("timeTotal:$timeTotal")
     }
 
     private suspend fun solveT1(): Long {
-        val listOfInputOrders = (0L..4L).toList().allOrders()
-        var maxOutputSignal = 0L
-        for (inputs in listOfInputOrders) {
-            val outputSignal = calculateOutputSignal(inputs, SINGLE)
-            if (outputSignal > maxOutputSignal) {
-                maxOutputSignal = outputSignal
-            }
-        }
-        return maxOutputSignal
+        val listOfBaseValues = (0L..4L).toList().allPermutations()
+        return calculateMaxOutputSignal(listOfBaseValues, SINGLE)
     }
 
-    private suspend fun calculateOutputSignal(baseValues: List<Long>, computerNetworkMode: NetworkMode): Long {
-        var output = 0L
+    private suspend fun solveT2(): Long {
+        val listOfBaseValues = (5L..9L).toList().allPermutations()
+        return calculateMaxOutputSignal(listOfBaseValues, LOOP)
+    }
+
+    private suspend fun calculateMaxOutputSignal(listOfBaseValues: List<List<Long>>, mode: NetworkMode): Long {
+        var maxOutput = 0L
+        for (inputs in listOfBaseValues) {
+            val output = calculateFinalOutput(inputs, mode)
+            if (output > maxOutput) {
+                maxOutput = output
+            }
+        }
+        return maxOutput
+    }
+
+    private suspend fun calculateFinalOutput(baseValues: List<Long>, computerNetworkMode: NetworkMode): Long {
         val computerNetwork = ComputerNetwork
             .buildEnvironment(baseValues.size, initialProgram, 0, baseValues, computerNetworkMode)
-        val resultA = computerNetwork.run().result
-
-//        for (input in baseValues) {
-//            val computer = IntcodeComputer.Builder(initialProgram).input(listOf<Long>(input, output)).build()
-//            computer.run()
-//            output = computer.output().last()
-//        }
-        return resultA
-//        return output
+        return computerNetwork.run().lastOutput().last() // FIXME await for run
     }
 
     override fun getInput(): List<String> {

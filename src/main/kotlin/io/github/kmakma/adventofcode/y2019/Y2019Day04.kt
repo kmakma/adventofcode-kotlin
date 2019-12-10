@@ -1,11 +1,22 @@
 package io.github.kmakma.adventofcode.y2019
 
-class Y2019Day04 : Y2019Day(
+internal class Y2019Day04 : Y2019Day(
     4,
-    "Number of possible passwords:",
-    "Number of possible passwords, extra rules"
+    "Number of possible passwords:"
 ) {
     private lateinit var passwordRange: IntRange
+
+    override fun initializeDay() {
+        super.initializeDay()
+    }
+
+    override suspend fun solveTask1(): Any? {
+        return super.solveTask1()
+    }
+
+    override suspend fun solveTask2(): Any? {
+        return super.solveTask2()
+    }
 
     override fun solve() {
         setPasswordRange(getInput())

@@ -1,29 +1,41 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.DeprecatingIntcodeComputer
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-class Y2019Day02 : Y2019Day(
+@ExperimentalCoroutinesApi
+internal class Y2019Day02 : Y2019Day(
     2,
-    "Result (index = 0) for intcode program with set parameter:",
-    "Parameter for intcode program with set target result:"
+    "1202 Program Alarm"
 ) {
     private lateinit var deprecatingIntcodeComputer: DeprecatingIntcodeComputer
+    private lateinit var initialProgram: List<Long>
 
-    override fun solve() {
-        deprecatingIntcodeComputer = DeprecatingIntcodeComputer.parse(getInput())
-        resultTask1 = restoreProgramStatus()
-        resultTask2 = completeGravityAssist()
+    override fun initializeDay() {
+        initialProgram = inputAsIntcodeProgram()
     }
 
-    private fun completeGravityAssist(): Int? {
-        return deprecatingIntcodeComputer.calculateInputForResult(19690720)
+    override suspend fun solveTask1(): Long {
+        return resultOfProgramWith(12, 2)
     }
 
-    private fun restoreProgramStatus(): Int {
-        return deprecatingIntcodeComputer.run(noun = 12, verb = 2).result()
+    override suspend fun solveTask2(): Long? {
+        // TODO d2t2 sync do-over
+        for(noun in 0L..99L) {
+            for (verb in 0L..99L) {
+                if(resultOfProgramWith(noun, verb)==19690720L) {
+                    return noun*100+verb
+                }
+            }
+        }
+        return null
     }
 
-    override fun getInput(): String {
-        return linesToList().first()
+    private suspend fun resultOfProgramWith(noun: Long, verb: Long): Long {
+        val mutableProgram = initialProgram.toMutableList()
+        mutableProgram[1] = noun
+        mutableProgram[2] = verb
+        return IntcodeComputer(mutableProgram).run().currentProgram().first()
     }
 }
