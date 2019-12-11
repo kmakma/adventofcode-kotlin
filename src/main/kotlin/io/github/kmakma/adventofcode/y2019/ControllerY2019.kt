@@ -3,7 +3,9 @@ package io.github.kmakma.adventofcode.y2019
 import io.github.kmakma.adventofcode.YearController
 import io.github.kmakma.adventofcode.utils.Day
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 @ExperimentalCoroutinesApi
 class ControllerY2019 : YearController() {
     override val year: Int = 2019
@@ -21,7 +23,8 @@ class ControllerY2019 : YearController() {
             8 -> Y2019Day08()
             9 -> Y2019Day09()
             10 -> Y2019Day10()
-            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 -> null
+            11 -> Y2019Day11()
+            12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 -> null
             else -> null
         }
     }

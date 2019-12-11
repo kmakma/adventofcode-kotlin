@@ -1,0 +1,34 @@
+package io.github.kmakma.adventofcode.y2019
+
+import io.github.kmakma.adventofcode.y2019.utils.PaintingRobot
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.time.ExperimentalTime
+
+@ExperimentalCoroutinesApi
+@ExperimentalTime
+internal class Y2019Day11 : Y2019Day(11, "Space Police") {
+    private lateinit var intcodeProgram: List<Long>
+    override fun initializeDay() {
+        intcodeProgram = inputAsIntcodeProgram()
+    }
+
+    override suspend fun solveTask1(): Int {
+        return PaintingRobot.paintJobsWithBlackStart(intcodeProgram)
+    }
+
+    override suspend fun solveTask2(): String {
+        val sb = StringBuilder()
+        val canvasArray = PaintingRobot.paintResultWithWhiteStart(intcodeProgram)
+        for (line in canvasArray) {
+            for (point in line) {
+                when (point) {
+                    0 -> sb.append("\u25A0")
+                    1 -> sb.append("\u25A1")
+                    else -> sb.append(" ")//error("unknown color")//
+                }
+            }
+            sb.append("\n")
+        }
+        return sb.toString()
+    }
+}

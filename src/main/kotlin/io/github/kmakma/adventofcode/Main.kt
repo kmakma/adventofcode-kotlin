@@ -1,5 +1,8 @@
 package io.github.kmakma.adventofcode
 
+import kotlin.time.ExperimentalTime
+
+@ExperimentalTime
 fun main() {
     MainController().start()
     // TODO write test after task rdy, to ensure validity

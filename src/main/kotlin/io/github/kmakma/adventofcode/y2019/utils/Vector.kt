@@ -1,10 +1,12 @@
 package io.github.kmakma.adventofcode.y2019.utils
 
 import io.github.kmakma.adventofcode.utils.gcd
-import kotlin.math.abs
-import kotlin.math.sqrt
+import kotlin.math.*
 
-data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
+/**
+ * integer vector, careful using [rotated]
+ */
+internal data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
     val length = sqrt((x * x + y * y).toDouble())
     val manhattanDistance = abs(x) + abs(y)
 
@@ -15,6 +17,15 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
         } else {
             Vector(x, y)
         }
+    }
+
+    fun rotated(degree: Int): Vector {
+        val radians = degree * PI / 180
+        val cos = cos(radians)
+        val sin = sin(radians)
+        val turnedX = x * cos - y * sin
+        val turnedY = x * sin + y * cos
+        return Vector(turnedX.toInt(), turnedY.toInt())
     }
 
     override fun compareTo(other: Vector): Int {
@@ -69,7 +80,7 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
     }
 }
 
-class PointIterator(
+internal class PointIterator(
     startVector: Vector,
     private val endVectorInclusive: Vector,
     private val steps: Int
@@ -126,7 +137,7 @@ class PointIterator(
     }
 }
 
-class PointProgression(
+internal class PointProgression(
     override val start: Vector,
     override val endInclusive: Vector,
     private val steps: Int = 1

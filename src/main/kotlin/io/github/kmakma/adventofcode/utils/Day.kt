@@ -3,7 +3,10 @@ package io.github.kmakma.adventofcode.utils
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
-import kotlin.system.measureTimeMillis
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 abstract class Day(
     private val year: Int,
