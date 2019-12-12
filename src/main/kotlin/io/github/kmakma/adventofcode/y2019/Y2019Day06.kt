@@ -1,35 +1,21 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.OrbitalMap
+import kotlin.time.ExperimentalTime
 
-internal class Y2019Day06 : Y2019Day(
-    6,
-    "Number of direct and indirect orbits:"
-) {
+@ExperimentalTime
+internal class Y2019Day06 : Y2019Day(6, "Universal Orbit Map") {
     private lateinit var orbitalMap: OrbitalMap
+
     override fun initializeDay() {
-        super.initializeDay()
+        orbitalMap = OrbitalMap.parse(linesToList())
     }
 
     override suspend fun solveTask1(): Any? {
-        return super.solveTask1()
+        return orbitalMap.totalNumberOfOrbits()
     }
 
     override suspend fun solveTask2(): Any? {
-        return super.solveTask2()
-    }
-
-    override  fun solve() {
-        orbitalMap = buildOrbitalMap()
-        resultTask1 = orbitalMap.totalNumberOfOrbits()
-        resultTask2 = orbitalMap.travelDistance("YOU", "SAN") - 2
-    }
-
-    override fun getInput(): List<String> {
-        return linesToList()
-    }
-
-    private fun buildOrbitalMap(): OrbitalMap {
-        return OrbitalMap.parse(getInput())
+        return orbitalMap.travelDistance("YOU", "SAN") - 2
     }
 }

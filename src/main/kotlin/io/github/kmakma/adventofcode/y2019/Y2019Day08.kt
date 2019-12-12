@@ -1,16 +1,20 @@
 package io.github.kmakma.adventofcode.y2019
 
+import kotlin.time.ExperimentalTime
+
+@ExperimentalTime
 internal class Y2019Day08 : Y2019Day(8, "Space Image Format") {
     private val imageWidth = 25
     private val imageHeight = 6
-    private lateinit var layers: List<List<Int>>
-    private val image = mutableListOf<Int>()
+    private lateinit var layers: List<List<Int>> // TODO preferred as array, #sorting #ui
+    private lateinit var image: MutableList<Int>
 
     override fun initializeDay() {
         layers = firstLine()
             .withIndex()
             .groupBy { it.index / (imageHeight * imageWidth) }
             .map { layer -> layer.value.map { Character.getNumericValue(it.value) } }
+        image = mutableListOf()
     }
 
     override suspend fun solveTask1(): Int {
@@ -25,7 +29,7 @@ internal class Y2019Day08 : Y2019Day(8, "Space Image Format") {
         return targetLayer.count { it == 1 } * targetLayer.count { it == 2 }
     }
 
-    override suspend fun solveTask2(): Any? {
+    override suspend fun solveTask2(): String {
         // draw layers onto image
         for (layer in layers) {
             drawLayer(layer)

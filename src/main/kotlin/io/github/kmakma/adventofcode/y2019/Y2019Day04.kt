@@ -1,45 +1,25 @@
 package io.github.kmakma.adventofcode.y2019
 
-internal class Y2019Day04 : Y2019Day(
-    4,
-    "Number of possible passwords:"
-) {
+import kotlin.time.ExperimentalTime
+
+@ExperimentalTime
+internal class Y2019Day04 : Y2019Day(4, "Secure Container") {
     private lateinit var passwordRange: IntRange
 
     override fun initializeDay() {
-        super.initializeDay()
-    }
-
-    override suspend fun solveTask1(): Any? {
-        return super.solveTask1()
-    }
-
-    override suspend fun solveTask2(): Any? {
-        return super.solveTask2()
-    }
-
-    override fun solve() {
-        setPasswordRange(getInput())
-        resultTask1 = countPossiblePasswordsTask1()
-        resultTask2 = countPossiblePasswordsTask2()
-    }
-
-    override fun getInput(): List<String> = linesToList()
-
-    private fun setPasswordRange(inputLines: List<String>) {
-        val rangeValues = inputLines.first().split("-").map { it.toInt() }
+        val rangeValues = firstLine().split("-").map { it.toInt() }
         passwordRange = rangeValues[0]..rangeValues[1]
     }
 
-    private fun countPossiblePasswordsTask1(): Int {
-        return passwordRange.mapNotNull { if (isValidPasswordTask1(it)) it else null }.size
+    override suspend fun solveTask1(): Int {
+        return passwordRange.mapNotNull { if (validateTask1Password(it)) it else null }.size
     }
 
-    private fun countPossiblePasswordsTask2(): Int {
-        return passwordRange.mapNotNull { if (isValidPasswordTask2(it)) it else null }.size
+    override suspend fun solveTask2(): Int {
+        return passwordRange.mapNotNull { if (validateTask2Password(it)) it else null }.size
     }
 
-    private fun isValidPasswordTask1(pwInt: Int): Boolean {
+    private fun validateTask1Password(pwInt: Int): Boolean {
         val pw = pwInt.toIntArray()
         return pw.size == 6 &&
                 pwInt >= passwordRange.first &&
@@ -48,7 +28,7 @@ internal class Y2019Day04 : Y2019Day(
                 !decreases(pw)
     }
 
-    private fun isValidPasswordTask2(pwInt: Int): Boolean {
+    private fun validateTask2Password(pwInt: Int): Boolean {
         val pw = pwInt.toIntArray()
         return pw.size == 6 &&
                 pwInt >= passwordRange.first &&

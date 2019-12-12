@@ -1,31 +1,26 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.y2019.utils.DeprecatingIntcodeComputer
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.time.ExperimentalTime
 
-internal class Y2019Day05 : Y2019Day(
-    5,
-    "Diagnostic code for air conditioner (systemID=1):"
-) {
-    private lateinit var inputString: String
+@ExperimentalTime
+@ExperimentalCoroutinesApi
+internal class Y2019Day05 : Y2019Day(5, "Sunny with a Chance of Asteroids") {
+    private lateinit var intcodeProgram: List<Long>
 
-    override fun solve() {
-        inputString = getInput()
-        resultTask1 = diagnosticsOnAirConditioner()
-        resultTask2 = diagnosticsOnThermalRadiator()
+    override fun initializeDay() {
+        intcodeProgram = inputAsIntcodeProgram()
     }
 
-    private fun diagnosticsOnAirConditioner(): Int {
-        val intcodeComputer = DeprecatingIntcodeComputer.parse(inputString)
-        return intcodeComputer.runInput(listOf(1)).last()
+    override suspend fun solveTask1(): Long {
+        val intcodeComputer = IntcodeComputer.Builder(intcodeProgram).input(listOf(1L)).build()
+        return intcodeComputer.run().output().last()
     }
 
-    private fun diagnosticsOnThermalRadiator(): Int {
-        val intcodeComputer = DeprecatingIntcodeComputer.parse(inputString)
-        return intcodeComputer.runInput(listOf(5)).last()
-    }
-
-    override fun getInput(): String {
-        return linesToList().first()
+    override suspend fun solveTask2(): Long {
+        val intcodeComputer = IntcodeComputer.Builder(intcodeProgram).input(listOf(5L)).build()
+        return intcodeComputer.run().output().last()
     }
 
 }

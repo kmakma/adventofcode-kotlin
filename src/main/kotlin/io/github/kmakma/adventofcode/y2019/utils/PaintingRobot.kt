@@ -16,9 +16,9 @@ class PaintingRobot private constructor(intcodeProgram: List<Long>) {
     private val computerOutput = ComputerIO()
     private val computerInput = ComputerIO()
     private val intcodeComputer = IntcodeComputer.Builder(intcodeProgram, computerInput, computerOutput).build()
-    private val robotCanvas = mutableMapOf<Vector, Long>()
-    private var pos = Vector(0, 0)
-    private var dir = Vector(0, 1)
+    private val robotCanvas = mutableMapOf<Vector2D, Long>()
+    private var pos = Vector2D(0, 0)
+    private var dir = Vector2D(0, 1)
 
     companion object {
         internal suspend fun paintJobsWithBlackStart(intcodeProgram: List<Long>): Int {
@@ -51,12 +51,12 @@ class PaintingRobot private constructor(intcodeProgram: List<Long>) {
         // build new canvas as map with lower-left-corner = (0,0) and lower-right-corner = (x,-y)
         val sizeX = maxX - minX + 1 // |maxX| + |minX| + 1 (for the 0)
         val sizeY = maxY - minY + 1
-        val moveVec = Vector(-minX, -maxY)
+        val moveVec = Vector2D(-minX, -maxY)
         val zeroedCanvas = robotCanvas.mapKeys { it.key + moveVec }
         // build new canvas as array so that upper-left-corner = (0,0) and lower-right = (x,y)
         return Array(sizeY) { y ->
             Array(sizeX) { x ->
-                val vec = Vector(x, -sizeY + y + 1)
+                val vec = Vector2D(x, -sizeY + y + 1)
                 zeroedCanvas.getOrDefault(vec, -1).toInt()
             }
         }

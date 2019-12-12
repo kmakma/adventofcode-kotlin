@@ -1,22 +1,22 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.y2019.utils.Vector
+import io.github.kmakma.adventofcode.y2019.utils.Vector2D
 import kotlin.math.abs
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 internal class Y2019Day10 : Y2019Day(10, "Monitoring Station") {
-    // asteroidMap with key:Vector=coordinate, value:Boolean:true=asteroid,false=empty
-    private lateinit var asteroidList: List<Vector>
+    private lateinit var asteroidList: List<Vector2D>
     private lateinit var detectedAsteroids: List<Int>
-    private lateinit var monitoringStationAsteroid: Vector
 
     override fun initializeDay() {
         val asteroidMapLines = linesToList()
-        val asteroidMutList = mutableListOf<Vector>()
+        val asteroidMutList = mutableListOf<Vector2D>()
         // parse asteroid map to list of asteroids
         for (y in asteroidMapLines.indices) {
             for (x in asteroidMapLines[y].indices) {
                 if (asteroidMapLines[y][x] == '#') {
-                    asteroidMutList.add(Vector(x, y))
+                    asteroidMutList.add(Vector2D(x, y))
                 }
             }
         }
@@ -33,31 +33,28 @@ internal class Y2019Day10 : Y2019Day(10, "Monitoring Station") {
         return detectedAsteroids.max() ?: 0
     }
 
-    override suspend fun solveTask2(): Int {
+    override suspend fun solveTask2(): Int? {
         val stationAsteroid = asteroidList[detectedAsteroids.indexOf(detectedAsteroids.max() ?: 0)]
-        println(stationAsteroid)
-        val nullVector = Vector(0, 0)
-
-        val vectorsToAsteroids: MutableMap<Vector, MutableList<Vector>> =
+        // map of vectors grouped by shortest vector; e.g. ((1,2),(2,4),(3,6)..) at index (1,2)
+        val vectorsToAsteroids: MutableMap<Vector2D, MutableList<Vector2D>> =
             (asteroidList - stationAsteroid)
                 .map { (it - stationAsteroid) }
                 .groupBy { it.shortest() }
                 .mapValues { it.value.sortedWith(Comparator { a, b -> clockwiseCompare(a, b) }).toMutableList() }
                 .toMutableMap()
-
+        // sort keys clockwise (actually not clockwise, since it starts at (0,-1) and goes counter-clockwise)
         val sortedKeys = (vectorsToAsteroids.keys)
             .sortedWith(Comparator { a, b -> clockwiseCompare(a, b) })
             .toMutableSet()
-
+        // laser show, until 200 destroyed
         var destroyed = 0
         while (sortedKeys.isNotEmpty()) {
             val iterator = sortedKeys.iterator()
             while (iterator.hasNext()) {
                 val direction = iterator.next()
-                val vecsInDir: MutableList<Vector> = vectorsToAsteroids[direction]!!
+                val vecsInDir: MutableList<Vector2D> = vectorsToAsteroids[direction]!!
                 var destroyedV = vecsInDir.removeAt(0)
                 destroyed++
-                println("$destroyed: $destroyedV ${stationAsteroid + destroyedV}") //todo
                 if (destroyed == 200) {
                     destroyedV += stationAsteroid
                     return destroyedV.x * 100 + destroyedV.y
@@ -67,7 +64,7 @@ internal class Y2019Day10 : Y2019Day(10, "Monitoring Station") {
                 }
             }
         }
-        return 0
+        return null
     }
 
     /**
@@ -75,7 +72,7 @@ internal class Y2019Day10 : Y2019Day(10, "Monitoring Station") {
      *
      * compliments to manipulated work of https://stackoverflow.com/a/6989383
      */
-    private fun clockwiseCompare(a: Vector, b: Vector): Int {
+    private fun clockwiseCompare(a: Vector2D, b: Vector2D): Int {
         // a and b on opposing sites (left/right)
         if (a.x >= 0 && b.x < 0) return -1
         if (a.x < 0 && b.x >= 0) return 1
@@ -96,7 +93,7 @@ internal class Y2019Day10 : Y2019Day(10, "Monitoring Station") {
         return (a.length - b.length).toInt()
     }
 
-    private fun numberOfDetectedAsteroids(asteroid: Vector): Int {
+    private fun numberOfDetectedAsteroids(asteroid: Vector2D): Int {
         return (asteroidList - asteroid)
             .map { (it - asteroid).shortest() }
             .toSet()

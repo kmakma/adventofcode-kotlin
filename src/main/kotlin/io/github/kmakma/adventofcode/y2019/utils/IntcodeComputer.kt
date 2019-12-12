@@ -13,8 +13,7 @@ internal class IntcodeComputer(
 ) {
     private var instruction = Instruction(END, emptyList())
     private var instructionPointer = 0L
-    internal var computerStatus: ComputerStatus = IDLE
-        private set
+    private var computerStatus: ComputerStatus = IDLE
     private lateinit var currentProgramMap: MutableMap<Long, Long>
     private var relativeBase = 0L
 

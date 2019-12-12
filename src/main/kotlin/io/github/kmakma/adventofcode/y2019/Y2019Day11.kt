@@ -24,11 +24,13 @@ internal class Y2019Day11 : Y2019Day(11, "Space Police") {
                 when (point) {
                     0 -> sb.append("\u25A0")
                     1 -> sb.append("\u25A1")
-                    else -> sb.append(" ")//error("unknown color")//
+                    else -> sb.append("") // TODO find reasons for these
                 }
             }
             sb.append("\n")
         }
         return sb.toString()
     }
+
+    // TODO bonus: add parser for actual result
 }
