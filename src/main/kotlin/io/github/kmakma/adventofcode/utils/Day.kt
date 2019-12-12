@@ -64,7 +64,7 @@ abstract class Day(
         }
     }
 
-    private fun printResults(printTime: Boolean = false) { // TODO (re)move: special dayResult printer/parser
+    private fun printResults(printTime: Boolean = false) { // TODO (re)move and add special dayResult printer/parser class/file
         println(" ~~~ Year $year - Day $day ~~~")
         println("  Task 1:")
         if (resultTask1 != null) {

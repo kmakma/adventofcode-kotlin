@@ -41,6 +41,6 @@ internal class Y2019Day07 : Y2019Day(7, "Amplification Circuit") {
     private suspend fun calculateFinalOutput(baseValues: List<Long>, computerNetworkMode: NetworkMode): Long {
         val computerNetwork = ComputerNetwork
             .buildEnvironment(baseValues.size, initialProgram, 0, baseValues, computerNetworkMode)
-        return computerNetwork.run().lastOutput().last() // FIXME await for run
+        return computerNetwork.run().lastOutput().last()
     }
 }

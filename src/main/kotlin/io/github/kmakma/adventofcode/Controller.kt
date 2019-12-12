@@ -3,6 +3,7 @@ package io.github.kmakma.adventofcode
 import io.github.kmakma.adventofcode.ControllerExitStatus.*
 import io.github.kmakma.adventofcode.utils.Day
 import io.github.kmakma.adventofcode.y2019.ControllerY2019
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.time.LocalDateTime
 import java.time.Month
 import java.time.ZoneId
@@ -28,6 +29,7 @@ private val currentAoCDay: Int
         }
     }
 
+@ExperimentalCoroutinesApi
 @ExperimentalTime
 class MainController {
     private var exitOrdered = false
@@ -40,7 +42,7 @@ class MainController {
         """.trimMargin()
     private val chooseYearActions = """
         |
-        | Choose a year or action:
+        | Choose an action:
         |  [ ] "2015".."$currentAoCYear" => go to year
         |  [ ] "2015".."$currentAoCYear" ("2015".."$currentAoCYear")* => execute tasks multiple years
         |  [ ] "*" => execute all tasks from all years (2015..$currentAoCYear)
@@ -48,6 +50,7 @@ class MainController {
         |  [ ] "exit" => end program
         | Input: 
         """.trimMargin()
+    // TODO add: terminal selection: in year/action selection, just day | [ ]
 
     private val invalidYearAction = " Not a year or action!"
     private val unknownYear = " Year not in known range!"

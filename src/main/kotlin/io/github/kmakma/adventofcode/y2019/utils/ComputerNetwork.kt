@@ -4,10 +4,9 @@ import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.Companion.build
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.LOOP
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.SINGLE
 import io.github.kmakma.adventofcode.y2019.utils.ComputerStatus.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 
 /**
  * Network of [IntcodeComputer]s, for larger/linked computations.
@@ -19,17 +18,21 @@ internal class ComputerNetwork private constructor(private val intcodeComputers:
     private var networkStatus = IDLE
 
     @ExperimentalCoroutinesApi
-    internal suspend fun run(): ComputerNetwork = coroutineScope {
+    internal suspend fun run(): ComputerNetwork {
         when (networkStatus) {
             IDLE -> networkStatus = RUNNING
             RUNNING, TERMINATING -> error("ComputerNetwork is already running!")
-            TERMINATED -> return@coroutineScope this@ComputerNetwork
+            TERMINATED -> return this@ComputerNetwork
         }
-        for (i in intcodeComputers.indices) { // TODO make list of deferred
-            withContext(Dispatchers.Default) { intcodeComputers[i].run() }
-        }
+        runComputers()
+        networkStatus = TERMINATED
+        return this@ComputerNetwork
+    }
 
-        return@coroutineScope this@ComputerNetwork
+    private suspend fun runComputers() = coroutineScope {
+        for (i in intcodeComputers.indices) { // TODO make list of deferred
+            launch { intcodeComputers[i].run() }
+        }
     }
 
     internal fun lastOutput(): List<Long> {
