@@ -6,38 +6,23 @@ import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.LOOP
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.SINGLE
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
-import kotlin.system.measureTimeMillis
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 @ExperimentalCoroutinesApi
-internal class Y2019Day07 : Y2019Day(
-    7,
-    "t1"
-) {
+internal class Y2019Day07 : Y2019Day(7, "Amplification Circuit") {
     private lateinit var initialProgram: List<Long>
 
-    override fun solve() {
-        runBlocking { solveB() }
+    override fun initializeDay() {
+        initialProgram = inputAsIntcodeProgram()
     }
 
-    private suspend fun solveB() = coroutineScope {
-        val timeTotal = measureTimeMillis {
-            val timeInit = measureTimeMillis { initialProgram = inputAsIntcodeProgram() }
-            val timeTask1 = async { measureTimeMillis { resultTask1 = solveT1() } }
-            val timeTask2 = async { measureTimeMillis { resultTask2 = solveT2() } }
-            println("timeInit:${timeInit},timeTask1:${timeTask1.await()}, timeTask2:${timeTask2.await()}")
-        }
-        println("timeTotal:$timeTotal")
-    }
-
-    private suspend fun solveT1(): Long {
+    override suspend fun solveTask1(): Long {
         val listOfBaseValues = (0L..4L).toList().allPermutations()
         return calculateMaxOutputSignal(listOfBaseValues, SINGLE)
     }
 
-    private suspend fun solveT2(): Long {
+    override suspend fun solveTask2(): Any? {
         val listOfBaseValues = (5L..9L).toList().allPermutations()
         return calculateMaxOutputSignal(listOfBaseValues, LOOP)
     }
@@ -57,9 +42,5 @@ internal class Y2019Day07 : Y2019Day(
         val computerNetwork = ComputerNetwork
             .buildEnvironment(baseValues.size, initialProgram, 0, baseValues, computerNetworkMode)
         return computerNetwork.run().lastOutput().last() // FIXME await for run
-    }
-
-    override fun getInput(): List<String> {
-        return firstCsvLineToList()
     }
 }

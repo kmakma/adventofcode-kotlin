@@ -14,10 +14,8 @@ import kotlinx.coroutines.withContext
  *
  * Build with [buildEnvironment]
  */
-internal class ComputerNetwork private constructor(
-    private val intcodeComputers: List<IntcodeComputer>,
-    private val mode: NetworkMode
-) {
+@ExperimentalCoroutinesApi
+internal class ComputerNetwork private constructor(private val intcodeComputers: List<IntcodeComputer>) {
     private var networkStatus = IDLE
 
     @ExperimentalCoroutinesApi
@@ -78,7 +76,7 @@ internal class ComputerNetwork private constructor(
         ): ComputerNetwork {
             val computerIOs = buildComputerIOs(size, ioBaseValues, firstInput, mode)
             val computers = buildComputers(size, initialComputerProgram, computerIOs, mode)
-            return ComputerNetwork(computers, mode)
+            return ComputerNetwork(computers)
         }
 
         private fun buildComputerIOs(
