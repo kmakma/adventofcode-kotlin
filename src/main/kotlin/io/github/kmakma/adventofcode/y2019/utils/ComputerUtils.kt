@@ -5,8 +5,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 
 
-internal class ComputerIO(input: List<Long>? = null) {
-    private val channel: Channel<Long> = Channel(Channel.UNLIMITED)
+internal class ComputerIO(input: List<Long>? = null, capacity: Int = Channel.UNLIMITED) {
+    private val channel: Channel<Long> = Channel(capacity)
     private val output: MutableList<Long> = mutableListOf()
 
     init {
