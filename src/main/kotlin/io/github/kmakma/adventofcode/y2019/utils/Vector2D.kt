@@ -6,7 +6,7 @@ import kotlin.math.*
 /**
  * integer vector, careful using [rotated]
  */
-internal data class Vector2D(val x: Int, val y: Int) : Comparable<Vector2D> {
+internal data class Vector2D(val x: Int, val y: Int) : Comparable<Vector2D> { // TODO rename to simpleVector
     val length = sqrt((x * x + y * y).toDouble())
     val manhattanDistance = abs(x) + abs(y)
 

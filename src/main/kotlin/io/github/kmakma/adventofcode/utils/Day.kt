@@ -79,7 +79,7 @@ abstract class Day(
             println("    task 2 not solved yet")
         }
         if (printTime) {
-            println("Time Measurements (in ns); total: $timeTotal, init: $timeInit, task1: $timeTask1, task2: $timeTask2")
+            println("Time Measurements; total: $timeTotal, init: $timeInit, task1: $timeTask1, task2: $timeTask2")
         }
     }
 }

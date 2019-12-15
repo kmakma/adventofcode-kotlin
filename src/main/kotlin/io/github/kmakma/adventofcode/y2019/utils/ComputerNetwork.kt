@@ -3,7 +3,7 @@ package io.github.kmakma.adventofcode.y2019.utils
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.Companion.buildEnvironment
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.LOOP
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.SINGLE
-import io.github.kmakma.adventofcode.y2019.utils.ComputerStatus.*
+import io.github.kmakma.adventofcode.y2019.utils.AsyncComputerStatus.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch

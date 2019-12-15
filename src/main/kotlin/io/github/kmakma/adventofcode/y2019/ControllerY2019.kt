@@ -27,7 +27,7 @@ class ControllerY2019 : YearController() {
             12 -> Y2019Day12()
             13 -> Y2019Day13()
             14 -> Y2019Day14()
-//            15 -> Y2019Day15()
+            15 -> Y2019Day15()
 //            16 -> Y2019Day16()
 //            17 -> Y2019Day17()
 //            18 -> Y2019Day18()

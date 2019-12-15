@@ -32,6 +32,6 @@ internal class ComputerIO(input: List<Long>? = null, capacity: Int = Channel.UNL
     internal fun isClosedForReceive() = channel.isClosedForReceive
 }
 
-internal enum class ComputerStatus {
+internal enum class AsyncComputerStatus {
     IDLE, RUNNING, TERMINATING, TERMINATED
 }

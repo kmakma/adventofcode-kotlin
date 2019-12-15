@@ -1,21 +1,23 @@
 package io.github.kmakma.adventofcode.y2019.utils
 
-import io.github.kmakma.adventofcode.y2019.utils.AsyncComputerStatus.*
-import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.OpCode.*
-import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.github.kmakma.adventofcode.y2019.utils.ComputerStatus.*
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputerV2.OpCode.*
+import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputerV2.ParameterMode.*
 
-@ExperimentalCoroutinesApi
-internal class IntcodeComputer(
+internal class IntcodeComputerV2(
     private val initialIntcodeProgram: List<Long>,
-    private val input: ComputerIO = ComputerIO(),
-    private val output: ComputerIO = ComputerIO()
+    input: Long? = null,
+    internal val output: MutableList<Long> = mutableListOf()
 ) {
     private var instruction = Instruction(END, emptyList())
     private var instructionPointer = 0L
-    private var computerStatus: AsyncComputerStatus = IDLE
     private lateinit var currentProgramMap: MutableMap<Long, Long>
     private var relativeBase = 0L
+
+    internal var computerStatus: ComputerStatus = IDLE
+        private set
+    internal var input: Long? = input
+        private set
 
     init {
         resetCurrentProgram()
@@ -23,13 +25,13 @@ internal class IntcodeComputer(
 
     // internal functions
 
-    internal suspend fun run(): IntcodeComputer {
+    internal fun run(): ComputerStatus {
         when (computerStatus) {
-            IDLE -> computerStatus = RUNNING
-            TERMINATED -> return this@IntcodeComputer
-            RUNNING, TERMINATING -> error("IntcodeComputer is already running!")
+            IDLE, AWAITING_INPUT -> computerStatus = RUNNING
+            TERMINATED -> return TERMINATED
+            RUNNING -> error("IntcodeComputer is already running!")
         }
-        while (computerStatus != TERMINATING && computerStatus != TERMINATED) {
+        while (computerStatus != AWAITING_INPUT && computerStatus != TERMINATED) {
             updateInstruction()
             when (instruction.opCode) {
                 ADD -> add()
@@ -44,33 +46,27 @@ internal class IntcodeComputer(
                 END -> end()
             }
         }
-        finish()
-        return this@IntcodeComputer
+        return computerStatus
     }
 
-    internal fun output(): List<Long> {
-        when (computerStatus) {
-            IDLE -> println("Warning! IntcodeComputer requested, but has not run yet!")
-            RUNNING -> error("Output not possible on running IntcodeComputer")
-            TERMINATING -> error("Output not possible on terminating IntcodeComputer")
-            TERMINATED -> { // proceed
-            }
-        }
-        return output.getOutput()
+    internal fun runWith(input: Long): ComputerStatus {
+        this.input = input
+        return run()
     }
 
     internal fun currentProgram(): List<Long> {
-        when (computerStatus) {
-            IDLE -> println("Warning! IntcodeComputer program requested, but computer didn't run yet!")
-            RUNNING -> error("Output not possible on running IntcodeComputer")
-            TERMINATING -> error("Output not possible on terminating IntcodeComputer")
-            TERMINATED -> { // proceed
-            }
-        }
         return currentProgramMap
             .keys
             .sorted()
             .mapNotNull { key -> currentProgramMap[key] }
+    }
+
+    internal fun setInput(input: Long) {
+        this.input = input
+    }
+
+    internal fun nextOutput(): Long {
+        return output.removeAt(0)
     }
 
     // Utility functions
@@ -112,15 +108,6 @@ internal class IntcodeComputer(
         return instruction.parameterModes.getOrElse(parameter - 1) { POSITION }
     }
 
-    private fun terminate() {
-        computerStatus = TERMINATING
-    }
-
-    private fun finish() {
-        output.close()
-        computerStatus = TERMINATED
-    }
-
     private fun Number.toOpCode() = when (this.toInt()) {
         1 -> ADD
         2 -> MUL
@@ -154,15 +141,18 @@ internal class IntcodeComputer(
         instructionPointer += MUL.values
     }
 
-    @ExperimentalCoroutinesApi
-    private suspend fun readInput() {
-        if (input.isClosedForReceive()) error("Input is closed and there are no values left")
-        currentProgramMap[pointer(1, true)] = input.receive()
+    private fun readInput() {
+        if (input == null) {
+            computerStatus = AWAITING_INPUT
+            return
+        }
+        currentProgramMap[pointer(1, true)] = input!!
+        input = null
         instructionPointer += IN.values
     }
 
-    private suspend fun writeOutput() {
-        output.send(value(1))
+    private fun writeOutput() {
+        output.add(value(1))
         instructionPointer += OUT.values
     }
 
@@ -208,7 +198,7 @@ internal class IntcodeComputer(
     }
 
     private fun end() {
-        terminate()
+        computerStatus = TERMINATED
         instructionPointer += END.values
     }
 
@@ -244,26 +234,30 @@ internal class IntcodeComputer(
 
     private data class Instruction(val opCode: OpCode, val parameterModes: List<ParameterMode>)
 
-    internal data class Builder(
-        var initialProgram: List<Long>,
-        var input: ComputerIO? = null,
-        var output: ComputerIO? = null
-    ) {
-        fun program(initialProgram: List<Long>) = apply { this.initialProgram = initialProgram }
-        fun input(input: ComputerIO) = apply { this.input = input }
-        fun input(input: List<Long>) = apply { this.input = ComputerIO(input) }
-        fun output(output: ComputerIO) = apply { this.output = output }
-        fun parseProgram(initialProgram: List<String>) =
-            apply { this.initialProgram = initialProgram.map { it.toLong() } }
+//    internal data class Builder(
+//        var initialProgram: List<Long>,
+//        var input: ComputerIO? = null,
+//        var output: ComputerIO? = null
+//    ) {
+//        fun program(initialProgram: List<Long>) = apply { this.initialProgram = initialProgram }
+//        fun input(input: ComputerIO) = apply { this.input = input }
+//        fun input(input: List<Long>) = apply { this.input = ComputerIO(input) }
+//        fun output(output: ComputerIO) = apply { this.output = output }
+//        fun parseProgram(initialProgram: List<String>) =
+//            apply { this.initialProgram = initialProgram.map { it.toLong() } }
+//
+//        fun build(): IntcodeComputer {
+//            if (input == null) {
+//                input = ComputerIO()
+//            }
+//            if (output == null) {
+//                output = ComputerIO()
+//            }
+//            return IntcodeComputer(initialProgram, input!!, output!!)
+//        }
+//    }
+}
 
-        fun build(): IntcodeComputer {
-            if (input == null) {
-                input = ComputerIO()
-            }
-            if (output == null) {
-                output = ComputerIO()
-            }
-            return IntcodeComputer(initialProgram, input!!, output!!)
-        }
-    }
+internal enum class ComputerStatus {
+    IDLE, RUNNING, TERMINATED, AWAITING_INPUT
 }
