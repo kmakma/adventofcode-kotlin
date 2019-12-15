@@ -5,20 +5,27 @@ import io.github.kmakma.adventofcode.y2019.utils.RepairDroid.Tile.*
 internal class RepairDroid(intcodeProgram: List<Long>) {
     private val intcodeComputer = IntcodeComputerV2(intcodeProgram)
     private val surroundings = mutableMapOf<Vector2D, Tile>()
+    private val distanceFromO2 = mutableMapOf<Vector2D, Int>()
+
     private var position = Vector2D(0, 0)
+    private lateinit var o2System: Vector2D
+
     private val directions by lazy { Direction.values().apply { sortBy { it.dirCode } } }
 
 
     fun activate() {
         surroundings[position] = EMPTY
-        // tODO
-        //  1. map the room
-        //  2. (for now) print the room
         intcodeComputer.run()
         mapSurroundings()
-        printSurroundings()
-
+        mapDistanceFromO2()
+//        printSurroundings()
+//        printDistances()
     }
+
+    fun distanceToO2System(): Int = distanceFromO2[Vector2D(0, 0)] ?: -1
+
+    fun timeToFillWithO2(): Int = distanceFromO2.values.max() ?: -1
+
 
     private fun mapSurroundings(direction: Direction? = null) {
         if (direction != null) {
@@ -35,10 +42,38 @@ internal class RepairDroid(intcodeProgram: List<Long>) {
         // move back:
         if (direction != null) {
             intcodeComputer.runWith(direction.opposite().dirCode)
+            intcodeComputer.nextTile()
             position -= direction.vector
         }
     }
 
+    private fun mapDistanceFromO2() {
+        distanceFromO2[o2System] = 0
+        val openPositions = mutableListOf(o2System)
+        while (openPositions.isNotEmpty()) {
+            val currentPosition = openPositions.removeAt(0)
+            accessibleNeighbors(currentPosition).forEach {
+                distanceFromO2.getOrPut(it) {
+                    openPositions.add(it)
+                    distanceFromO2[currentPosition]!! + 1
+                }
+            }
+        }
+    }
+
+    private fun accessibleNeighbors(position: Vector2D): List<Vector2D> {
+        val neighbors = mutableListOf<Vector2D>()
+        for (direction in directions) {
+            with(position + direction.vector) {
+                if (surroundings[this] != WALL) {
+                    neighbors.add(this)
+                }
+            }
+        }
+        return neighbors
+    }
+
+    @Suppress("DuplicatedCode")
     private fun printSurroundings() {
         var minX = 0
         var maxX = 0
@@ -53,33 +88,53 @@ internal class RepairDroid(intcodeProgram: List<Long>) {
         println()
         for (y in maxY downTo minY) {
             for (x in minX..maxX) {
-                if (x == position.x && y == position.y) {
-                    print("D")
-                } else {
-                    print(surroundings.getOrDefault(Vector2D(x, y), UNKNOWN).string)
+                when {
+                    x == position.x && y == position.y -> print("D")
+                    x == 0 && y == 0 -> print("S")
+                    else -> print(surroundings.getOrDefault(Vector2D(x, y), UNKNOWN).string)
                 }
             }
             println()
         }
     }
 
-    /**
-     * maps tile in direction (if not mapped) and moves. Returns whether move was executed
-     */
-    private fun mapAndMove(position: Vector2D, newTile: Tile): Boolean {
-        surroundings[position] = newTile
-        return if (newTile == WALL) {
-            printSurroundings()
-
-            false
-        } else {
-            this.position = position
-            printSurroundings()
-
-            true
+    @Suppress("DuplicatedCode")
+    private fun printDistances() {
+        var minX = 0
+        var maxX = 0
+        var minY = 0
+        var maxY = 0
+        surroundings.keys.forEach {
+            if (it.x < minX) minX = it.x
+            if (it.x > maxX) maxX = it.x
+            if (it.y < minY) minY = it.y
+            if (it.y > maxY) maxY = it.y
+        }
+        println()
+        for (y in maxY downTo minY) {
+            for (x in minX..maxX) {
+                with(Vector2D(x, y)) {
+                    if (surroundings[this] != WALL) {
+                        print(distanceFromO2[this].toString().padStart(5, ' '))
+                    } else {
+                        print("     ")
+                    }
+                }
+            }
+            println()
         }
     }
 
+    private fun mapAndMove(position: Vector2D, newTile: Tile): Boolean {
+        surroundings[position] = newTile
+        if (newTile == O2SYSTEM) o2System = position
+        return if (newTile == WALL) {
+            false
+        } else {
+            this.position = position
+            true
+        }
+    }
 
     private fun Long.toTile(): Tile {
         return when (this) {

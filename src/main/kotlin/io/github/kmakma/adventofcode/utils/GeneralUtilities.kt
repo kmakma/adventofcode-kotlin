@@ -18,7 +18,7 @@ private fun <E> allPermutations(ordered: List<E> = emptyList(), unordered: List<
 /**
  * greatest common divisor
  *
- * tip: with a fraction x/y divide by gdc/gdc to get lowest form of x/y
+ * tip: with a fraction x/y divide by gcd/gcd to get lowest form of x/y
  */
 fun gcd(a: Int, b: Int): Int {
     return if (b == 0) a
@@ -28,7 +28,7 @@ fun gcd(a: Int, b: Int): Int {
 /**
  * greatest common divisor
  *
- * tip: with a fraction x/y divide by gdc/gdc to get lowest form of x/y
+ * tip: with a fraction x/y divide by gcd/gcd to get lowest form of x/y
  */
 fun gcd(a: Long, b: Long): Long {
     return if (b == 0L) a

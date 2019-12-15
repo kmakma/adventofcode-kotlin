@@ -54,6 +54,7 @@ abstract class Day(
     }
     // TODO add bonus for tasks like y19d8 or ~d11 where you get a picture (bonus = parse picture for actual solution)
 
+    // TODO add option to not run async
     private suspend fun solve(): Unit = coroutineScope {
         timeTotal = measureTime {
             timeInit = measureTime { initializeDay() }
