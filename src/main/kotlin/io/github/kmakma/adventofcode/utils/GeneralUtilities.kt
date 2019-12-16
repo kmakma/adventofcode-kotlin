@@ -1,5 +1,7 @@
 package io.github.kmakma.adventofcode.utils
 
+import java.math.BigInteger
+
 /**
  * Returns lists with elements of the list ordered in all possible ways
  */
@@ -49,3 +51,18 @@ fun lcm(a: Long, b: Long): Long {
  */
 @Suppress("UNUSED_PARAMETER")
 fun else0(x: Int) = 0
+
+/**
+ * planned as a faster alternative to y2019.d16.t2...
+ * But an index of around 523k created a tiny little 1E411 (which didn't even took that long)
+ */
+@Suppress("unused")
+object StupidBigAssNumberCreator {
+    private val factorList = mutableListOf(BigInteger("100"))
+    internal fun getFactor(index: Int): BigInteger {
+        if (factorList.lastIndex < index) {
+            factorList.add(index, getFactor(index - 1) * (100L + index).toBigInteger() / (index + 1).toBigInteger())
+        }
+        return factorList[index]
+    }
+}
