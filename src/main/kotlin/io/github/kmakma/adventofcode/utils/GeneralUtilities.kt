@@ -41,3 +41,11 @@ fun gcd(a: Long, b: Long): Long {
 fun lcm(a: Long, b: Long): Long {
     return (a * b) / gcd(a, b)
 }
+
+/**
+ * to be used for methods like [List.getOrElse], if a `0` is required as result. Example:
+ *
+ * `list.getOrElse(index, ::else0)`
+ */
+@Suppress("UNUSED_PARAMETER")
+fun else0(x: Int) = 0
