@@ -28,11 +28,11 @@ internal data class Vector2D(val x: Int, val y: Int) : Comparable<Vector2D> { //
         return Vector2D(turnedX.toInt(), turnedY.toInt())
     }
 
-    override fun compareTo(other: Vector2D): Int {
-        return if (this.x != other.x) {
-            this.x - other.x
-        } else {
+    override fun compareTo(other: Vector2D): Int { // FIXME check weather changes influence other stuff
+        return if (this.y != other.y) {
             this.y - other.y
+        } else {
+            this.x - other.x
         }
     }
 

@@ -65,9 +65,17 @@ internal class IntcodeComputerV2(
         this.input = input
     }
 
+    internal fun setAtAddress(address: Long, value: Long) {
+        currentProgramMap[address] = value
+    }
+
+    internal fun hasOutput(): Boolean = output.isNotEmpty()
+
     internal fun nextOutput(): Long {
         return output.removeAt(0)
     }
+
+    internal fun latestOutput(): Long = output.last()
 
     // Utility functions
 
