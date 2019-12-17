@@ -19,14 +19,13 @@ internal class Y2019Day17 : Y2019Day(17, "Set and Forget") {
 
     override suspend fun solveTask1(): Int {
         with(VacuumRobot(intcodeProgram)) {
-            activateCamera()
-            return alignmentParametersSum()
+            return sumOfAlignmentParameters()
         }
     }
 
     override suspend fun solveTask2(): Long {
         with(VacuumRobot(intcodeProgram)) {
-            return notifyRobots(manualTask2)
+            return countDust(manualTask2)
         }
     }
 

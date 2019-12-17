@@ -9,18 +9,19 @@ class VacuumRobot(intcodeProgram: List<Long>) {
     private val directions = Direction.values().map { it.vector2D }
 
 
-    internal fun activateCamera() {
+    private fun activateCamera() {
         intcodeComputerV2.run()
         val asciiOutput = intcodeComputerV2.output
         exterior = outputAsMap(asciiOutput)
     }
 
-    internal fun alignmentParametersSum(): Int {
-        val scaffoldings = exterior.filter { it.value == SCAFFOLDING }.keys
-        val intersections = scaffoldings.filter {
+    internal fun sumOfAlignmentParameters(): Int {
+        activateCamera()
+        val scaffolding = exterior.filter { it.value == SCAFFOLDING }.keys
+        val intersections = scaffolding.filter {
             var neighbors = 0
             for (dir in directions) {
-                if (scaffoldings.contains(it + dir)) {
+                if (scaffolding.contains(it + dir)) {
                     neighbors++
                 }
             }
@@ -45,7 +46,7 @@ class VacuumRobot(intcodeProgram: List<Long>) {
         return extScaffolding
     }
 
-    fun notifyRobots(movementLogic: List<List<Char>>): Long {
+    private fun notifyRobots(movementLogic: List<List<Char>>) {
         intcodeComputerV2.setAtAddress(0L, 2L)
         intcodeComputerV2.run()
         for (movRoutine in movementLogic) {
@@ -57,6 +58,11 @@ class VacuumRobot(intcodeProgram: List<Long>) {
         intcodeComputerV2.runWith('n'.toLong()) // y/n = continues video feed
         intcodeComputerV2.runWith(10L) // 10L = newLine
 //        printOutput(intcodeComputerV2)
+    }
+
+    internal fun countDust(manualMovementLogic: List<List<Char>>): Long {
+        notifyRobots(manualMovementLogic)
+        // TODO full automatic
         return intcodeComputerV2.latestOutput()
     }
 
@@ -82,11 +88,6 @@ class VacuumRobot(intcodeProgram: List<Long>) {
 //        }
 //        TODO("not implemented")
 //    }
-
-    private enum class Tile {
-
-    }
-
 }
 
 private enum class Direction(val vector2D: Vector2D) {
