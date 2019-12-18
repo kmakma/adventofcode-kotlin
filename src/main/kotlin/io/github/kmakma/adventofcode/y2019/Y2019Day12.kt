@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 internal class Y2019Day12 : Y2019Day(12, "The N-Body Problem") {
     private lateinit var moons: List<String>
     override fun initializeDay() {
-        moons = linesToList()
+        moons = inputInStringLines()
     }
 
     override suspend fun solveTask1(): Any? {

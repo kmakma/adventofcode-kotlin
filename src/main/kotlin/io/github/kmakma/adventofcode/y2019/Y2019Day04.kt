@@ -7,7 +7,7 @@ internal class Y2019Day04 : Y2019Day(4, "Secure Container") {
     private lateinit var passwordRange: IntRange
 
     override fun initializeDay() {
-        val rangeValues = firstLine().split("-").map { it.toInt() }
+        val rangeValues = inputInOneLine().split("-").map { it.toInt() }
         passwordRange = rangeValues[0]..rangeValues[1]
     }
 

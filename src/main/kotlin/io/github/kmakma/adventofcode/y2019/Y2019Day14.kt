@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 internal class Y2019Day14 : Y2019Day(14, "Space Stoichiometry") {
     private lateinit var reactions: List<Reaction>
     override fun initializeDay() {
-        reactions = linesToList().map { Reaction.parse(it) }
+        reactions = inputInStringLines().map { Reaction.parse(it) }
     }
 
     override suspend fun solveTask1(): Long {

@@ -7,7 +7,7 @@ internal class Y2019Day01 : Y2019Day(1, "The Tyranny of the Rocket Equation") {
     private lateinit var fuelForModules: List<Int>
 
     override fun initializeDay() {
-        fuelForModules = calculateFuelForModules(linesToList())
+        fuelForModules = calculateFuelForModules(inputInStringLines())
     }
 
     override suspend fun solveTask1(): Int {

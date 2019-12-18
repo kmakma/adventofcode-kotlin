@@ -10,7 +10,7 @@ internal class Y2019Day10 : Y2019Day(10, "Monitoring Station") {
     private lateinit var detectedAsteroids: List<Int>
 
     override fun initializeDay() {
-        val asteroidMapLines = linesToList()
+        val asteroidMapLines = inputInStringLines()
         val asteroidMutList = mutableListOf<Vector2D>()
         // parse asteroid map to list of asteroids
         for (y in asteroidMapLines.indices) {

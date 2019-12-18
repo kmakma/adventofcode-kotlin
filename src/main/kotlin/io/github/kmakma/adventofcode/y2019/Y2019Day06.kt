@@ -8,7 +8,7 @@ internal class Y2019Day06 : Y2019Day(6, "Universal Orbit Map") {
     private lateinit var orbitalMap: OrbitalMap
 
     override fun initializeDay() {
-        orbitalMap = OrbitalMap.parse(linesToList())
+        orbitalMap = OrbitalMap.parse(inputInStringLines())
     }
 
     override suspend fun solveTask1(): Any? {

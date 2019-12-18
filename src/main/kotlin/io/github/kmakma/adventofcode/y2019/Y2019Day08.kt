@@ -10,7 +10,7 @@ internal class Y2019Day08 : Y2019Day(8, "Space Image Format") {
     private lateinit var image: MutableList<Int>
 
     override fun initializeDay() {
-        layers = firstLine()
+        layers = inputInOneLine()
             .withIndex()
             .groupBy { it.index / (imageHeight * imageWidth) }
             .map { layer -> layer.value.map { Character.getNumericValue(it.value) } }

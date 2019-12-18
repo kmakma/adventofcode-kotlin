@@ -12,7 +12,7 @@ internal class Y2019Day16 : Y2019Day(16, "Flawed Frequency Transmission") {
 
     override fun initializeDay() {
         basePattern = listOf(0, 1, 0, -1)
-        input = firstLine().map(Character::getNumericValue)
+        input = inputInOneLine().map(Character::getNumericValue)
     }
 
     override suspend fun solveTask1(): String {

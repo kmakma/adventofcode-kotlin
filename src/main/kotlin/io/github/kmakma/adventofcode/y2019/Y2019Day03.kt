@@ -10,7 +10,7 @@ internal class Y2019Day03 : Y2019Day(3, "Distance to closest intersection of wir
     private lateinit var intersections: Set<Vector2D>
 
     override fun initializeDay() {
-        val pathVectors = parseInputInstructionsToVectors(csvLinesToLists(","))
+        val pathVectors = parseInputInstructionsToVectors(inputInSplitLines(","))
         wirePath1 = tracePath(pathVectors[0])
         wirePath2 = tracePath(pathVectors[1])
         intersections = wirePath1.intersect(wirePath2)
