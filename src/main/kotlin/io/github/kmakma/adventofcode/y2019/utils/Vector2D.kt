@@ -78,6 +78,17 @@ internal data class Vector2D(val x: Int, val y: Int) : Comparable<Vector2D> { //
             Vector2D(newX, newY)
         )
     }
+
+    companion object {
+        val basicDirections by lazy { Direction.values() }
+
+        enum class Direction(val vector: Vector2D) {
+            UP(Vector2D(0, 1)),
+            DOWN(Vector2D(0, -1)),
+            RIGHT(Vector2D(1, 0)),
+            LEFT(Vector2D(-1, 0))
+        }
+    }
 }
 
 internal class PointIterator2D(
