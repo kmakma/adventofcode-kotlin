@@ -31,13 +31,12 @@ abstract class InputParser {
     }
 
     /**
-     * The whole file as one string
+     * The first line of input
      */
     protected fun inputInOneLine(): String {
-        getUri()?.let {
-            return File(it.file).readText()
+        inputInStringLines().let {
+            return if (it.isNotEmpty()) it.first() else ""
         }
-        return ""
     }
 
     /**
@@ -49,7 +48,7 @@ abstract class InputParser {
 
 
     /**
-     * Whole input file as one line to list of strings separated by [delimiters] (which is by default ",")
+     * First line of input to list of strings separated by [delimiters] (which is by default ",")
      */
     protected fun inputInOneSplitLine(vararg delimiters: String = arrayOf(",")): List<String> {
         return inputInOneLine().split(*delimiters)

@@ -20,7 +20,7 @@ internal class IntcodeComputerV2(
         private set
 
     init {
-        resetCurrentProgram()
+        resetProgram()
     }
 
     // internal functions
@@ -61,7 +61,7 @@ internal class IntcodeComputerV2(
             .mapNotNull { key -> currentProgramMap[key] }
     }
 
-    internal fun setInput(input: Long) {
+    internal fun setInput(input: Long) { // TODO input as list, accept multiple values
         this.input = input
     }
 
@@ -71,11 +71,22 @@ internal class IntcodeComputerV2(
 
     internal fun hasOutput(): Boolean = output.isNotEmpty()
 
+    /**
+     * removes first/next output and returns it
+     */
     internal fun nextOutput(): Long {
         return output.removeAt(0)
     }
 
     internal fun latestOutput(): Long = output.last()
+
+
+    internal fun resetProgram() {
+        currentProgramMap =
+            initialIntcodeProgram.withIndex().map { it.index.toLong() to it.value }.toMap().toMutableMap()
+        instructionPointer  = 0L
+        computerStatus=IDLE
+    }
 
     // Utility functions
 
@@ -91,10 +102,6 @@ internal class IntcodeComputerV2(
         instruction = Instruction(opCode, parameterModes)
     }
 
-    private fun resetCurrentProgram() {
-        currentProgramMap =
-            initialIntcodeProgram.withIndex().map { it.index.toLong() to it.value }.toMap().toMutableMap()
-    }
 
     private fun pointer(offset: Int, writing: Boolean = false): Long {
         val pMode = parameterMode(offset)

@@ -30,7 +30,7 @@ internal class ControllerY2019 : YearController() {
             16 -> Y2019Day16()
             17 -> Y2019Day17()
             18 -> Y2019Day18()
-//            19 -> Y2019Day19()
+            19 -> Y2019Day19()
 //            20 -> Y2019Day20()
 //            21 -> Y2019Day21()
 //            22 -> Y2019Day22()
