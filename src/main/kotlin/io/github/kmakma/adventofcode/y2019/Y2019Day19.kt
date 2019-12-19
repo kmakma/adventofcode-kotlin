@@ -11,58 +11,45 @@ internal class Y2019Day19 : Y2019Day(19, "Tractor Beam") {
         intcodeProgram = inputAsIntcodeProgram()
     }
 
-    override suspend fun solveTask1(): Any? {
+    override suspend fun solveTask1(): Int {
         with(IntcodeComputerV2(intcodeProgram)) {
             for (y in 0L..49L) {
                 for (x in 0L..49L) {
-                    this.run()
                     this.runWith(x)
                     this.runWith(y)
                     this.resetProgram()
-//                    print(this.nextOutput())
                 }
-//                println()
             }
             return this.output.count { it == 1L }
         }
     }
 
-    override suspend fun solveTask2(): Any? {
-        return foo()
-    }
-
-
-    private fun foo(): Long {
+    override suspend fun solveTask2(): Long {
         with(IntcodeComputerV2(intcodeProgram)) {
-            with(findDiagonal(this)) {
-                return (this.first) * 10000 + (this.second)
-            }
+            return findCoordinatesOfSantaSquare(this)
         }
     }
 
-    private fun findDiagonal(intPC: IntcodeComputerV2): Pair<Long, Long> {
-        var lastX = 0L
-        var lastY = 100L
+    private fun findCoordinatesOfSantaSquare(intPC: IntcodeComputerV2): Long {
+        var lastX = 500L
+        var lastY = 1000L
+        // find first pull coordinates with y=100
         do {
             lastX++
         } while (intPC.runValues(lastX, lastY) != 1)
-
-
-
-        while (true) {
-            if (lastX >= 99L && intPC.runValues(lastX - 99, lastY + 99) == 1) {
-                return Pair(lastX-99, lastY)
-            }
+        // while on coordinates across diagonal of to -x, +y is without pull
+        while (!(lastX >= 99L && intPC.runValues(lastX + 99, lastY - 99) == 1)) {
             when {
-                intPC.runValues(lastX + 1, lastY) == 1 -> lastX++
+                intPC.runValues(lastX, lastY+1) == 1 -> lastY++
                 intPC.runValues(lastX + 1, lastY + 1) == 1 -> {
                     lastX++
                     lastY++
                 }
-                intPC.runValues(lastX, lastY + 1) == 1 -> lastY++
+                intPC.runValues(lastX+1, lastY) == 1 -> lastX++
                 else -> error("unexpected values at ($lastX, $lastY)")
             }
         }
+        return lastX * 10000 + (lastY-99) // == coordinates
     }
 
 }
