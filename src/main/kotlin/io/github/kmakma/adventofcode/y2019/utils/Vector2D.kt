@@ -80,7 +80,8 @@ internal data class Vector2D(val x: Int, val y: Int) : Comparable<Vector2D> { //
     }
 
     companion object {
-        val basicDirections by lazy { Direction.values() }
+        val basicDirections by lazy { Direction.values().map { it.vector } }
+
 
         enum class Direction(val vector: Vector2D) {
             UP(Vector2D(0, 1)),
