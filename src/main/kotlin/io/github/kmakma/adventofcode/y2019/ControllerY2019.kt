@@ -32,12 +32,12 @@ internal class ControllerY2019 : YearController() {
             18 -> Y2019Day18()
             19 -> Y2019Day19()
             20 -> Y2019Day20()
-//            21 -> Y2019Day21()
-//            22 -> Y2019Day22()
-//            23 -> Y2019Day23()
-//            24 -> Y2019Day24()
-//            25 -> Y2019Day25()
-            else -> null
+            21 -> Y2019Day21()
+            22 -> Y2019Day22()
+            23 -> Y2019Day23()
+            24 -> Y2019Day24()
+            25 -> Y2019Day25()
+            else -> null // TODO illegal argument
         }
     }
 }
