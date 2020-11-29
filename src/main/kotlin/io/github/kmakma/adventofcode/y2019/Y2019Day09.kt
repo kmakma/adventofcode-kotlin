@@ -13,6 +13,9 @@ internal class Y2019Day09 : Y2019Day(9, "Sensor Boost") {
         computerBuilder = IntcodeComputer.Builder(inputAsIntcodeProgram())
     }
 
+
+    // fixme!! closed before finishing?
+
     override suspend fun solveTask1(): Long {
         val computer = computerBuilder.input(listOf(1L)).build()
         return computer.run().output().last()

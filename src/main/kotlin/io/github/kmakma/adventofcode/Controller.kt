@@ -3,7 +3,6 @@ package io.github.kmakma.adventofcode
 import io.github.kmakma.adventofcode.ControllerExitStatus.*
 import io.github.kmakma.adventofcode.utils.Day
 import io.github.kmakma.adventofcode.y2019.ControllerY2019
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.time.LocalDateTime
 import java.time.Month
 import java.time.ZoneId
@@ -29,7 +28,6 @@ private val currentAoCDay: Int
         }
     }
 
-@ExperimentalCoroutinesApi
 @ExperimentalTime
 class MainController {
     private var exitOrdered = false

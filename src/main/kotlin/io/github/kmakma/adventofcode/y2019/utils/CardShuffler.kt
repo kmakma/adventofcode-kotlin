@@ -3,11 +3,10 @@ package io.github.kmakma.adventofcode.y2019.utils
 import io.github.kmakma.adventofcode.y2019.utils.ShuffleTechnique.*
 import kotlin.math.abs
 
-internal class CardShuffler(inputLines: List<String>) {
-    private val deckSize = 10007
+internal class CardShuffler(inputLines: List<String>, private val deckSize: Int) {
 
     private val instructions: List<ShuffleInstruction>
-    private val deck = IntArray(deckSize) { index -> index }
+    val deck = IntArray(deckSize) { index -> index }
 
     init {
         instructions = inputLines.map { line -> line.toShuffleInstruction() }
@@ -67,10 +66,7 @@ internal data class ShuffleInstruction(val technique: ShuffleTechnique, val n: I
         var incrIndex = 0
         for (i in deck.indices) {
             deck[incrIndex] = tempDeck[i]
-            incrIndex += n
-            if (incrIndex >= deckSize) {
-                incrIndex -= deckSize
-            }
+            incrIndex = (incrIndex + n) % deckSize
         }
     }
 }

@@ -10,42 +10,50 @@ private const val WALL = '#'
 private const val PATH = '.'
 
 
-internal class TorusGraph internal constructor(
+internal open class TorusGraph internal constructor(
     pathMap: List<List<Int>>,
-    private val portalPoints: Map<Vector2D, String>
+    protected val portalPoints: Map<Vector2D, String>
 ) {
     private val portalLabels: Map<String, List<Vector2D>>
-    private val pathDistances: List<MutableList<Int>>
+    protected val pathDistances: List<MutableList<Int>>
+    protected val openPoints: MutableList<Vector2D>
+    private var endVector: Vector2D?
+
 
     init {
         portalLabels = portalPoints.keys
             .groupBy { portalPoint -> portalPoints[portalPoint] ?: error("should not be null") }
         pathDistances = pathMap.map { line -> line.toMutableList() }
+        openPoints = mutableListOf()
+
+        endVector = getSingleVector("ZZ")
     }
 
     companion object {
         internal fun build(map: List<List<Char>>): TorusGraph = TorusGraphBuilder(map).buildTorusGraph()
     }
 
-    fun shortestPathLength(startLabel: String, endLabel: String): Int {
-        val startVector = getSingleVector(startLabel)
-        val endVector = getSingleVector(endLabel)
-
-        val openPoints = mutableListOf(startVector)
+    open fun shortestPathLength(): Int {
+        val startVector = getSingleVector("AA")
+        openPoints.add(startVector)
         setDistance(startVector, 0)
 
+        clearOpenPoints()
+
+        return distanceAt(endVector!!)
+    }
+
+    protected fun clearOpenPoints() {
         while (openPoints.isNotEmpty()) {
             with(openPoints.removeAt(0)) {
-                if (this == endVector) return distanceAt(this)
+                if (this == endVector) return
                 val newDistance = distanceAt(this) + 1
                 neighborsOf(this).forEach { neighbor ->
-                    println("n: $neighbor; dist: $newDistance")
                     openPoints.add(neighbor)
                     setDistance(neighbor, newDistance)
                 }
             }
         }
-        return -1
     }
 
     private fun printGraph() {
@@ -57,7 +65,7 @@ internal class TorusGraph internal constructor(
         }
     }
 
-    private fun getSingleVector(label: String): Vector2D {
+    protected fun getSingleVector(label: String): Vector2D {
         portalLabels[label]
             .let { vectorList ->
                 if (vectorList == null || vectorList.size != 1) error("bad label vectors ($label)")
@@ -65,28 +73,32 @@ internal class TorusGraph internal constructor(
             }
     }
 
-    private fun setDistance(vector: Vector2D, distance: Int) {
+    protected fun setDistance(vector: Vector2D, distance: Int) {
         pathDistances[vector.y][vector.x] = distance
     }
 
-    private fun neighborsOf(vector: Vector2D): List<Vector2D> {
-        val neighbors = basicDirections.mapNotNull { dir ->
-            val potNeighbor = vector + dir
-            val distance = distanceAt(potNeighbor)
-            if (distance == NOT_VISITED) potNeighbor
-            else null
-        }.toMutableList()
+    protected open fun neighborsOf(vector: Vector2D): List<Vector2D> {
+        val neighbors = directNeighborsOf(vector)
         getOtherPortalOrNull(vector)?.let {
             neighbors.add(it)
         }
         return neighbors
     }
 
-    private fun distanceAt(vector: Vector2D): Int {
+    protected fun directNeighborsOf(vector: Vector2D): MutableList<Vector2D> {
+        return basicDirections.mapNotNull { dir ->
+            val potNeighbor = vector + dir
+            val distance = distanceAt(potNeighbor)
+            if (distance == NOT_VISITED) potNeighbor // todo check if distance can be smallered
+            else null
+        }.toMutableList()
+    }
+
+    protected fun distanceAt(vector: Vector2D): Int {
         return pathDistances[vector.y][vector.x]
     }
 
-    private fun getOtherPortalOrNull(sourceVector: Vector2D): Vector2D? {
+    protected fun getOtherPortalOrNull(sourceVector: Vector2D): Vector2D? {
         portalPoints[sourceVector].let { label ->
             if (label == null) return null
             portalLabels[label].let { portalList ->
@@ -94,6 +106,106 @@ internal class TorusGraph internal constructor(
                 else portalList?.first { portalVector -> sourceVector != portalVector }
             }
         }
+    }
+}
+
+internal class RecursiveTorusGraph(
+    pathMap: List<List<Int>>,
+    portalPoints: Map<Vector2D, String>,
+    private val layer: Int,
+    private val outerGraph: RecursiveTorusGraph?
+) : TorusGraph(pathMap, portalPoints) {
+
+    private var outerPortals = mutableMapOf<Vector2D, Int>()
+    private var innerPortals = mutableMapOf<Vector2D, Int>()
+    private val incomingPortals = mutableListOf<Vector2D>()
+
+    private val innerGraph: RecursiveTorusGraph by lazy {
+        RecursiveTorusGraph(pathMap, portalPoints, layer + 1, this)
+    }
+
+    override fun shortestPathLength(): Int {
+        val startVector = getSingleVector("AA")
+        openPoints.add(startVector)
+        setDistance(startVector, 0)
+
+        while (openPoints.isNotEmpty()) {
+            clearOpenPoints()
+            val tempInnerPortals = innerPortals
+            innerPortals = mutableMapOf()
+            innerGraph.addIncomingPortals(tempInnerPortals)
+            innerGraph.clearPoints()
+        }
+
+        return -1
+    }
+
+    private fun addIncomingPortals(portals: Map<Vector2D, Int>) {
+        portals.forEach { (portalVector, distance) ->
+            val originalDistance = distanceAt(portalVector)
+            if (originalDistance == NOT_VISITED || distance < originalDistance) {
+                setDistance(portalVector, distance)
+                openPoints.add(portalVector)
+                incomingPortals.add(portalVector)
+            }
+        }
+    }
+
+    private fun clearPoints() {
+        // todo in clearPoints
+        //  if no openPoints do smth with innerGraph
+        //  if yes openPoints: clearStuff, then if outerPortals notEmpty go back up
+        clearOpenPoints()
+        when {
+            outerPortals.isNotEmpty() -> {
+                val tempInnerPortals = outerPortals
+                outerPortals = mutableMapOf()
+                outerGraph?.addIncomingPortals(tempInnerPortals)
+                outerGraph?.clearPoints()
+            }
+            innerPortals.isNotEmpty() -> {
+                val tempInnerPortals = innerPortals
+                innerPortals = mutableMapOf()
+                innerGraph.addIncomingPortals(tempInnerPortals)
+                innerGraph.clearPoints()
+            }
+            else -> error("this should not have happened (no openpoints, no outer/inner portals)")
+        }
+    }
+
+
+    override fun neighborsOf(vector: Vector2D): List<Vector2D> {
+        getOtherPortalOrNull(vector)?.let {
+            processPortal(vector)
+        }
+        return directNeighborsOf(vector)
+    }
+
+    private fun processPortal(portalVector: Vector2D) {
+        when {
+            isOuterPortal(portalVector) -> {
+                if (layer > 0 && !incomingPortals.contains(portalVector)) outerPortals[portalVector] =
+                    distanceAt(portalVector)
+            }
+            isInnerPortal(portalVector) -> {
+                if (!incomingPortals.contains(portalVector)) innerPortals[portalVector] = distanceAt(portalVector)
+            }
+            else -> error("not a portal (or anything else?)")
+        }
+    }
+
+    private fun isOuterPortal(portalVector: Vector2D): Boolean {
+        return portalVector.y == 2 ||
+                portalVector.x == 2 ||
+                portalVector.y == pathDistances.size - 3 ||
+                portalVector.x == pathDistances[portalVector.y].size - 3
+    }
+
+    private fun isInnerPortal(portalVector: Vector2D): Boolean {
+        return portalVector.y > 2 &&
+                portalVector.x > 2 &&
+                portalVector.y < pathDistances.size - 3 &&
+                portalVector.x < pathDistances[portalVector.y].size - 3
     }
 }
 
@@ -108,6 +220,8 @@ internal class TorusGraphBuilder(private val map: List<List<Char>>) {
     }
 
     internal fun buildTorusGraph(): TorusGraph = TorusGraph(pathMap, portalsPoints)
+
+    internal fun buildRecTorusGraph(): RecursiveTorusGraph = RecursiveTorusGraph(pathMap, portalsPoints, 0, null)
 
     private fun buildPathMap(): List<List<Int>> {
         return map.mapIndexed { lineIndex, line ->

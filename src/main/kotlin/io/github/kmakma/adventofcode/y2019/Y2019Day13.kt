@@ -7,7 +7,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
 @ExperimentalTime
-internal class Y2019Day13 : Y2019Day(13, "") {
+internal class Y2019Day13 : Y2019Day(13, "Care Package") {
     private lateinit var intcodeProgram: List<Long>
     override fun initializeDay() {
         intcodeProgram = inputAsIntcodeProgram()

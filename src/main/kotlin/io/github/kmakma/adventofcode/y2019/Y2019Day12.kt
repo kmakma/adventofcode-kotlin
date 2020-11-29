@@ -16,6 +16,5 @@ internal class Y2019Day12 : Y2019Day(12, "The N-Body Problem") {
 
     override suspend fun solveTask2(): Any? {
         return JupiterMoonSimulation.findRepetition(moons)
-        return null
     }
 }

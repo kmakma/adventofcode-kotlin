@@ -90,7 +90,7 @@ class VacuumRobot(intcodeProgram: List<Long>) {
 //    }
 }
 
-private enum class Direction(val vector2D: Vector2D) {
+internal enum class Direction(val vector2D: Vector2D) {
     UP(Vector2D(0, 1)), DOWN(Vector2D(0, -1)),
     RIGHT(Vector2D(1, 0)), LEFT(Vector2D(-1, 0))
 }
