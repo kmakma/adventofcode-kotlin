@@ -1,8 +1,5 @@
 package io.github.kmakma.adventofcode.y2019
 
-import kotlin.time.ExperimentalTime
-
-@ExperimentalTime
 internal class Y2019Day08 : Y2019Day(8, "Space Image Format") {
     private val imageWidth = 25
     private val imageHeight = 6

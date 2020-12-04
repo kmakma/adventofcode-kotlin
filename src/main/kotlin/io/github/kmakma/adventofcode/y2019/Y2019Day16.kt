@@ -2,9 +2,7 @@ package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.utils.else0
 import kotlin.math.abs
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day16 : Y2019Day(16, "Flawed Frequency Transmission") {
     private lateinit var basePattern: List<Int>
     private lateinit var input: List<Int>

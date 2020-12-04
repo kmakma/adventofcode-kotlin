@@ -1,9 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.VacuumRobot
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day17 : Y2019Day(17, "Set and Forget") {
     private lateinit var intcodeProgram: List<Long>
     private lateinit var manualTask2: List<List<Char>>

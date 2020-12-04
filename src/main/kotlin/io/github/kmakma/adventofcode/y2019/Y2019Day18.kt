@@ -1,10 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
-import io.github.kmakma.adventofcode.y2019.utils.UndergroundVault
 import io.github.kmakma.adventofcode.y2019.utils.UndergroundVaultGraph
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day18 : Y2019Day(18, "Many-Worlds Interpretation") {
     private lateinit var inputLines: List<String>
 

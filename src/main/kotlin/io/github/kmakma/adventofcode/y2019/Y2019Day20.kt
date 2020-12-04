@@ -1,9 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.TorusGraphBuilder
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day20 : Y2019Day(20, "Donut Maze") {
 
     private lateinit var torusGraphBuilder: TorusGraphBuilder

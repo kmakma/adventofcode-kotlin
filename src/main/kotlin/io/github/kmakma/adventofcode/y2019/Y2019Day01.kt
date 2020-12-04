@@ -1,8 +1,5 @@
 package io.github.kmakma.adventofcode.y2019
 
-import kotlin.time.ExperimentalTime
-
-@ExperimentalTime
 internal class Y2019Day01 : Y2019Day(1, "The Tyranny of the Rocket Equation") {
     private lateinit var fuelForModules: List<Int>
 

@@ -1,16 +1,12 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
-@ExperimentalCoroutinesApi
 internal class Y2019Day02 : Y2019Day(2, "1202 Program Alarm") {
     private lateinit var initialProgram: List<Long>
 

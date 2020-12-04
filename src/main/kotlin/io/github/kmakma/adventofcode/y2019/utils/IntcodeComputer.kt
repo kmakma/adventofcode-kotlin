@@ -5,7 +5,6 @@ import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.OpCode.*
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@ExperimentalCoroutinesApi
 internal class IntcodeComputer(
     private val initialIntcodeProgram: List<Long>,
     private val input: ComputerIO = ComputerIO(),
@@ -23,6 +22,7 @@ internal class IntcodeComputer(
 
     // internal functions
 
+    @ExperimentalCoroutinesApi
     internal suspend fun run(): IntcodeComputer {
         when (computerStatus) {
             IDLE -> computerStatus = RUNNING
@@ -218,17 +218,22 @@ internal class IntcodeComputer(
         // add or multiply p1 and p2 to p3.POSITION
         ADD(4),
         MUL(4),
+
         // input to p1.POS / output from p1
         IN(2),
         OUT(2),
+
         // jump to p2 if p1 is not/is zero (true/false)
         JNZ(3),
         JZ(3),
+
         // set 1 if true, else 0 to p3.POS: p1 < p2 / p1 == p2
         SETL(4),
         SETE(4),
+
         // offset relativeBase by p1
         REL(2),
+
         // program termination
         END(1)
     }
@@ -236,8 +241,10 @@ internal class IntcodeComputer(
     private enum class ParameterMode {
         // parameter is pointer to value
         POSITION,
+
         // parameter is value
         IMMEDIATE,
+
         // parameter is pointer to value + [relativeBase]
         RELATIVE
     }

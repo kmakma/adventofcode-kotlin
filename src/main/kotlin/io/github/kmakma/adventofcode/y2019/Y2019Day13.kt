@@ -3,10 +3,8 @@ package io.github.kmakma.adventofcode.y2019
 import io.github.kmakma.adventofcode.y2019.utils.BreakoutGame
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
-@ExperimentalTime
 internal class Y2019Day13 : Y2019Day(13, "Care Package") {
     private lateinit var intcodeProgram: List<Long>
     override fun initializeDay() {

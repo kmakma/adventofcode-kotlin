@@ -2,13 +2,11 @@ package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.YearController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
-@ExperimentalCoroutinesApi
 internal class ControllerY2019 : YearController() {
     override val year: Int = 2019
 
+    @ExperimentalCoroutinesApi
     override fun getDay(day: Int): Y2019Day? {
         require(day in 1..25)
         return when (day) {

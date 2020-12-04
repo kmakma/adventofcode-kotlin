@@ -2,9 +2,7 @@ package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.Vector2D
 import kotlin.math.abs
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day10 : Y2019Day(10, "Monitoring Station") {
     private lateinit var asteroidList: List<Vector2D>
     private lateinit var detectedAsteroids: List<Int>

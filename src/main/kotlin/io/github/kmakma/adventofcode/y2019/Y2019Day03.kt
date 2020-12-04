@@ -1,9 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.Vector2D
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day03 : Y2019Day(3, "Distance to closest intersection of wires") {
     private lateinit var wirePath1: List<Vector2D>
     private lateinit var wirePath2: List<Vector2D>

@@ -1,9 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
 import kotlin.math.ceil
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day14 : Y2019Day(14, "Space Stoichiometry") {
     private lateinit var reactions: List<Reaction>
     override fun initializeDay() {

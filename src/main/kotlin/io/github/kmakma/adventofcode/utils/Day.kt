@@ -1,14 +1,13 @@
 package io.github.kmakma.adventofcode.utils
 
+import io.github.kmakma.adventofcode.utils.TimeUnit.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.ZERO
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
+import java.util.*
+import kotlin.math.absoluteValue
+import kotlin.system.measureNanoTime
 
-@ExperimentalTime
 abstract class Day(
     private val year: Int,
     private val day: Int,
@@ -21,10 +20,10 @@ abstract class Day(
 
     private var resultTask1: Any? = null
     private var resultTask2: Any? = null
-    private var timeTotal: Duration = ZERO
-    private var timeInit: Duration = ZERO
-    private var timeTask1: Duration = ZERO
-    private var timeTask2: Duration = ZERO
+    private var timeTotal: Long = 0
+    private var timeInit: Long = 0
+    private var timeTask1: Long = 0
+    private var timeTask2: Long = 0
 
     override fun getFilePath(): String {
         return if (day < 10) {
@@ -56,13 +55,14 @@ abstract class Day(
 
     // TODO add option to not run async
     private suspend fun solve(): Unit = coroutineScope {
-        timeTotal = measureTime {
-            timeInit = measureTime { initializeDay() }
-            val deferredTimeTask1 = async { measureTime { resultTask1 = solveTask1() } }
-            val deferredTimeTask2 = async { measureTime { resultTask2 = solveTask2() } }
+        timeTotal = measureNanoTime {
+            timeInit = measureNanoTime { initializeDay() }
+            val deferredTimeTask1 = async { measureNanoTime { resultTask1 = solveTask1() } }
+            val deferredTimeTask2 = async { measureNanoTime { resultTask2 = solveTask2() } }
             timeTask1 = deferredTimeTask1.await()
             timeTask2 = deferredTimeTask2.await()
         }
+        timeTotal.toString()
     }
 
     private fun printResults(printTime: Boolean = true) { // TODO (re)move and add special dayResult printer/parser class/file
@@ -80,7 +80,46 @@ abstract class Day(
             println("    task 2 not solved yet")
         }
         if (printTime) {
-            println("Time Measurements; total: $timeTotal, init: $timeInit, task1: $timeTask1, task2: $timeTask2")
+            println("Time Measurements; total: ${timeTotal.nsToString()}, init: ${timeInit.nsToString()}, task1: ${timeTask1.nsToString()}, task2: ${timeTask2.nsToString()}")
         }
     }
+}
+
+/**
+ * Similar to [kotlin.time.Duration.toString]
+ */
+private fun Long.nsToString(): String {
+    // TODO
+    val ns = absoluteValue
+    val unit = when {
+        ns < 1e3 -> NANOSECONDS
+        ns < 1e6 -> MICROSECONDS
+        ns < 1e9 -> MILLISECONDS
+        ns < 1000e9 -> SECONDS
+        ns < 60_000e9 -> MINUTES
+        ns < 3600_000e9 -> HOURS
+        else -> HOURS
+    }
+    val value = String.format(Locale.US, "%.2f", convertNsToDouble(ns, unit))
+    return value + unit.shortName
+}
+
+private fun convertNsToDouble(ns: Long, unit: TimeUnit): Double {
+    return when (unit) {
+        NANOSECONDS -> ns.toDouble()
+        MICROSECONDS -> ns / 1.0e3
+        MILLISECONDS -> ns / 1.0e6
+        SECONDS -> ns / 1.0e9
+        MINUTES -> ns / 60.0e9
+        HOURS -> ns / 3600.0e9
+    }
+}
+
+private enum class TimeUnit(val shortName: String) {
+    NANOSECONDS("ns"),
+    MICROSECONDS("us"),
+    MILLISECONDS("ms"),
+    SECONDS("s"),
+    MINUTES("m"),
+    HOURS("h")
 }

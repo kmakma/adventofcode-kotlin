@@ -2,10 +2,8 @@ package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.PaintingRobot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
-@ExperimentalTime
 internal class Y2019Day11 : Y2019Day(11, "Space Police") {
     private lateinit var intcodeProgram: List<Long>
     override fun initializeDay() {

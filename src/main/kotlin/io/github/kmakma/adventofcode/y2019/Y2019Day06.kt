@@ -1,9 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.OrbitalMap
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day06 : Y2019Day(6, "Universal Orbit Map") {
     private lateinit var orbitalMap: OrbitalMap
 

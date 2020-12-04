@@ -6,9 +6,7 @@ import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.LOOP
 import io.github.kmakma.adventofcode.y2019.utils.ComputerNetwork.NetworkMode.SINGLE
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 @ExperimentalCoroutinesApi
 internal class Y2019Day07 : Y2019Day(7, "Amplification Circuit") {
     private lateinit var initialProgram: List<Long>

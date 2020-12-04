@@ -6,7 +6,6 @@ import io.github.kmakma.adventofcode.y2019.ControllerY2019
 import java.time.LocalDateTime
 import java.time.Month
 import java.time.ZoneId
-import kotlin.time.ExperimentalTime
 
 private val today: LocalDateTime
     get() = LocalDateTime.now(ZoneId.of("UTC-5"))
@@ -28,7 +27,6 @@ private val currentAoCDay: Int
         }
     }
 
-@ExperimentalTime
 class MainController {
     private var exitOrdered = false
 
@@ -121,7 +119,6 @@ enum class ControllerExitStatus {
     EXIT_PROGRAM, EXIT_YEAR, IDLE
 }
 
-@ExperimentalTime
 abstract class YearController {
     protected abstract val year: Int
 

@@ -1,8 +1,5 @@
 package io.github.kmakma.adventofcode.y2019
 
-import kotlin.time.ExperimentalTime
-
-@ExperimentalTime
 internal class Y2019Day04 : Y2019Day(4, "Secure Container") {
     private lateinit var passwordRange: IntRange
 

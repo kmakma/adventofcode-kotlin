@@ -1,9 +1,7 @@
 package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputerV2
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 internal class Y2019Day19 : Y2019Day(19, "Tractor Beam") {
     private lateinit var intcodeProgram: List<Long>
 

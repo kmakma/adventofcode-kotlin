@@ -2,10 +2,7 @@ package io.github.kmakma.adventofcode.y2019
 
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
-@ExperimentalCoroutinesApi
 internal class Y2019Day05 : Y2019Day(5, "Sunny with a Chance of Asteroids") {
     private lateinit var intcodeProgram: List<Long>
 
@@ -13,6 +10,7 @@ internal class Y2019Day05 : Y2019Day(5, "Sunny with a Chance of Asteroids") {
         intcodeProgram = inputAsIntcodeProgram()
     }
 
+    @ExperimentalCoroutinesApi
     override suspend fun solveTask1(): Long {
         val intcodeComputer = IntcodeComputer.Builder(intcodeProgram).input(listOf(1L)).build()
         return intcodeComputer.run().output().last()
