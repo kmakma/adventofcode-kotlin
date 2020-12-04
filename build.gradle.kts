@@ -11,16 +11,16 @@ repositories {
 }
 
 //tasks.named<Wrapper>("wrapper") {
-//    gradleVersion = "6.3"
+//    gradleVersion = "6.7.1"
 //}
 
 application {
-    mainClassName = "io.github.kmakma.adventofcode.MainKt"
+    mainClass.set("io.github.kmakma.adventofcode.MainKt")
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     implementation("com.github.ajalt:mordant:1.2.1")
 }
 
