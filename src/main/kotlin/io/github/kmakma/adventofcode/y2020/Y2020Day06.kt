@@ -6,7 +6,7 @@ fun main() {
     Y2020Day06().solveAndPrint()
 }
 
-class Y2020Day06 : Day(2020, 6, "") {
+class Y2020Day06 : Day(2020, 6, "Custom Customs") {
     private lateinit var inputLines: List<List<Char>>
     override fun initializeDay() {
         inputLines = inputInCharLines()
