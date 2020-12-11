@@ -57,8 +57,24 @@ abstract class Day(
     private suspend fun solve(): Unit = coroutineScope {
         timeTotal = measureNanoTime {
             timeInit = measureNanoTime { initializeDay() }
-            val deferredTimeTask1 = async { measureNanoTime { resultTask1 = solveTask1() } }
-            val deferredTimeTask2 = async { measureNanoTime { resultTask2 = solveTask2() } }
+            val deferredTimeTask1 = async {
+                measureNanoTime {
+                    resultTask1 = try {
+                        solveTask1()
+                    } catch (e: NotImplementedError) {
+                        null
+                    }
+                }
+            }
+            val deferredTimeTask2 = async {
+                measureNanoTime {
+                    resultTask2 = try {
+                        solveTask2()
+                    } catch (e: NotImplementedError) {
+                        null
+                    }
+                }
+            }
             timeTask1 = deferredTimeTask1.await()
             timeTask2 = deferredTimeTask2.await()
         }
