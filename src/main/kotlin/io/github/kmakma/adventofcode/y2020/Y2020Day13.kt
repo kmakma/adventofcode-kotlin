@@ -39,8 +39,6 @@ class Y2020Day13 : Day(2020, 13, "Shuttle Search") {
             if ((timestamp + departs[nextBus].first) % departs[nextBus].second == 0L)
                 step = lcm(step, departs[nextBus++].second)
         } while (nextBus < departs.size)
-        println(timestamp)
-
         return timestamp
     }
 
