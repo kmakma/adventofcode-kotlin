@@ -17,7 +17,6 @@ class Y2020Day06 : Day(2020, 6, "Custom Customs") {
         var sum = 0
         for (line in inputLines) {
             if (line.isEmpty()) {
-                println(currentSet.size)
                 sum += currentSet.size
                 currentSet = mutableSetOf()
             } else {

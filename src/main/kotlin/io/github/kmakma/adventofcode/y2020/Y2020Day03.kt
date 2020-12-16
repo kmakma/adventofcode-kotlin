@@ -1,9 +1,11 @@
 package io.github.kmakma.adventofcode.y2020
 
 import io.github.kmakma.adventofcode.utils.Day
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+fun main() {
+    Y2020Day03().solveAndPrint()
+}
+
 class Y2020Day03 : Day(2020, 3, "Toboggan Trajectory") {
     private lateinit var inputSlope: List<List<Char>>
     override fun initializeDay() {
@@ -14,7 +16,6 @@ class Y2020Day03 : Day(2020, 3, "Toboggan Trajectory") {
         var trees = 0
         var right = 0
         for (line in inputSlope) {
-            println(right)
             if (line[right] == '#') trees++
             right = normalizeRight(right + 3)
         }
@@ -59,9 +60,4 @@ class Y2020Day03 : Day(2020, 3, "Toboggan Trajectory") {
         }
         return oldRight
     }
-}
-
-@ExperimentalTime
-fun main() {
-    Y2020Day03().solveAndPrint()
 }

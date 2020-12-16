@@ -104,7 +104,7 @@ abstract class Day(
 /**
  * Similar to [kotlin.time.Duration.toString]
  */
-private fun Long.nsToString(): String {
+fun Long.nsToString(): String {
     // TODO
     val ns = absoluteValue
     val unit = when {
@@ -120,7 +120,7 @@ private fun Long.nsToString(): String {
     return value + unit.shortName
 }
 
-private fun convertNsToDouble(ns: Long, unit: TimeUnit): Double {
+fun convertNsToDouble(ns: Long, unit: TimeUnit): Double {
     return when (unit) {
         NANOSECONDS -> ns.toDouble()
         MICROSECONDS -> ns / 1.0e3
@@ -131,7 +131,7 @@ private fun convertNsToDouble(ns: Long, unit: TimeUnit): Double {
     }
 }
 
-private enum class TimeUnit(val shortName: String) {
+enum class TimeUnit(val shortName: String) {
     NANOSECONDS("ns"),
     MICROSECONDS("us"),
     MILLISECONDS("ms"),
