@@ -8,56 +8,47 @@ fun main() {
 
 private enum class Operation { ADDITION, MULTIPLICATION }
 
-class Y2020Day18 : Day(2020, 18, "???") {
+class Y2020Day18 : Day(2020, 18, "Operation Order") {
 
     private lateinit var inputLines: List<List<Char>>
 
     override fun initializeDay() {
-        inputLines = inputInCharLines()
+        inputLines = inputInStringLines().map { line -> line.toList().filter { it != ' ' } }
     }
 
     override suspend fun solveTask1(): Any? {
-        return inputLines.map { line -> ExpressionParser.calculateSimple(line) }.sum()
+        return inputLines.map { line -> parseSimple(line.toMutableList()) }.sum()
     }
 
     override suspend fun solveTask2(): Any? {
-        return inputLines.map { line -> ExpressionParser.calculateAdvanced(line) }.sum()
+        return inputLines.map { line -> parseAdvanced(line.toMutableList()) }.sum()
     }
-}
-
-private class ExpressionParser private constructor(expression: List<Char>) {
-    val expr = expression.filter { it != ' ' }
-
-    private fun parseSimple() = parseSimple(expr.toMutableList())
 
     private fun parseSimple(expr: MutableList<Char>): Long {
         var value: Long? = null
         var operation: Operation? = null
         while (expr.isNotEmpty()) {
             when (val char = expr.removeFirst()) {
-                '(' -> value = if (value == null) {
-                    parseSimple(expr)
-                } else {
-                    calculate(value, operation, parseSimple(expr))
-                }
+                '(' -> value = calculate(value, operation, parseSimple(expr))
                 ')' -> return value!!
                 '+' -> operation = Operation.ADDITION
                 '*' -> operation = Operation.MULTIPLICATION
-                else -> {
-                    value = if (value == null) {
-                        Character.getNumericValue(char).toLong()
-                    } else {
-                        calculate(value, operation, Character.getNumericValue(char).toLong())
-                    }
-                }
+                else -> value = calculate(value, operation, Character.getNumericValue(char).toLong())
             }
         }
         return value!!
     }
 
-    private fun parseAdvanced() = parseAdvanced(expr.toMutableList())
+    private fun calculate(first: Long?, operation: Operation?, second: Long): Long {
+        return when {
+            first == null -> second
+            operation == Operation.ADDITION -> first + second
+            operation == Operation.MULTIPLICATION -> first * second
+            else -> throw IllegalArgumentException("missing operator: $first, $operation, $second")
+        }
+    }
 
-    private fun parseAdvanced(expr: MutableList<Char>, subExpr: StringBuilder = StringBuilder()): String {
+    private fun parseAdvanced(expr: MutableList<Char>, subExpr: StringBuilder = StringBuilder()): Long {
         while (expr.isNotEmpty()) {
             when (val char = expr.removeFirst()) {
                 '(' -> subExpr.append(parseAdvanced(expr))
@@ -68,7 +59,7 @@ private class ExpressionParser private constructor(expression: List<Char>) {
         return calculate(subExpr)
     }
 
-    private fun calculate(expr: StringBuilder): String {
+    private fun calculate(expr: StringBuilder): Long {
         return expr
             .split("*")
             .map { sumString ->
@@ -78,24 +69,5 @@ private class ExpressionParser private constructor(expression: List<Char>) {
                     .sum()
             }
             .reduce { acc, l -> acc * l }
-            .toString()
-    }
-
-    private fun calculate(first: Long, operation: Operation?, second: Long): Long {
-        return when (operation) {
-            Operation.ADDITION -> first + second
-            Operation.MULTIPLICATION -> first * second
-            else -> throw IllegalArgumentException("calculation of: $first, $operation, $second")
-        }
-    }
-
-    companion object {
-        fun calculateSimple(expr: List<Char>): Long {
-            return ExpressionParser(expr).parseSimple()
-        }
-
-        fun calculateAdvanced(expr: List<Char>): Long {
-            return ExpressionParser(expr).parseAdvanced().toLong()
-        }
     }
 }

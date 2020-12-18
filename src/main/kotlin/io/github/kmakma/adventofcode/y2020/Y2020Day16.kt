@@ -102,7 +102,7 @@ class TicketRules {
             val matches = mutableSetOf<String>().apply { addAll(rulesMap.keys) }
             for (ticket in tickets) {
                 rulesMap.forEach { (name, ranges) ->
-                    val ticketValue = ticket.get(i)
+                    val ticketValue = ticket[i]
                     if (ticketValue !in ranges.first && ticketValue !in ranges.second) matches.remove(name)
                 }
             }
