@@ -9,12 +9,27 @@ fun <E> List<E>.allPermutations(): List<List<E>> {
     return allPermutations(unordered = this)
 }
 
-
 private fun <E> allPermutations(ordered: List<E> = emptyList(), unordered: List<E>): List<List<E>> {
     if (unordered.size == 1) {
         return listOf(ordered + unordered.first())
     }
     return unordered.flatMap { allPermutations(ordered + it, unordered - it) }
+}
+
+fun generateStringPermutations(lists: List<List<String>>): List<String> {
+    val result = mutableListOf<String>()
+    stringPermutations(lists, result, 0, "")
+    return result
+}
+
+private fun stringPermutations(lists: List<List<String>>, result: MutableList<String>, depth: Int, current: String) {
+    if (depth == lists.size) {
+        result.add(current)
+        return
+    }
+    for (s in lists[depth]) {
+        stringPermutations(lists, result, depth + 1, current + s)
+    }
 }
 
 /**
