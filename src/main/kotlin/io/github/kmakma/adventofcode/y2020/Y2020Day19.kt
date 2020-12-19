@@ -1,7 +1,6 @@
 package io.github.kmakma.adventofcode.y2020
 
 import io.github.kmakma.adventofcode.utils.Day
-import io.github.kmakma.adventofcode.utils.generateStringPermutations
 
 fun main() {
     Y2020Day19().solveAndPrint()
@@ -11,6 +10,7 @@ class Y2020Day19 : Day(2020, 19, "Monster Messages") {
     private lateinit var ruleList: List<String>
     private lateinit var messages: List<String>
     private lateinit var inputLines: List<String>
+
 
     override fun initializeDay() {
         inputLines = inputInStringLines()
@@ -22,121 +22,69 @@ class Y2020Day19 : Day(2020, 19, "Monster Messages") {
     }
 
     override suspend fun solveTask1(): Any? {
-        val ruleStrings = mutableMapOf<Int, String>()
-        val rules = ruleList.map { line ->
-            val (no, rule) = line.split(": ")
-            ruleStrings[no.toInt()] = rule
-            no.toInt() to MessageRule()
-        }.toMap()
-
-        val regex = Regex(""""\w+"""")
-        for ((index, pattern) in ruleStrings) {
-            val rule = rules[index] ?: error("missing rule no index")
-            when {
-                pattern.matches(regex) -> rule.value = pattern.substring(1, pattern.lastIndex)
-                pattern.contains(" | ") -> {
-                    val subRules = pattern
-                        .split(" | ")
-                        .map { subRules(rules, it) }
-                    rule.addAllSubRules(subRules)
-                }
-                else -> rule.addSubRules(subRules(rules, pattern))
-            }
-        }
-
-        val matches = (rules[0] ?: error("missing rule no. 0")).matches()
-        val dud = messages.mapNotNull { message ->
-            for (rule in matches) {
-                if (message == rule) return@mapNotNull 1
-            }
-            null
-        }
-        return dud.sum()
-    }
-
-    private fun subRules(rules: Map<Int, MessageRule>, subRules: String): List<MessageRule> {
-        return subRules.split(" ").map { rules[it.toInt()] ?: error("missing rule no. $it") }
+        return countMatches(false)
     }
 
     override suspend fun solveTask2(): Any? {
-        val ruleStrings = mutableMapOf<Int, String>()
-        val rules = ruleList.map { line ->
-            val (no, rule) = line.split(": ")
-            ruleStrings[no.toInt()] = rule
-            no.toInt() to MessageRule()
-        }.toMap()
-
-        val regex = Regex(""""\w+"""")
-        for ((index, pattern) in ruleStrings) {
-            val rule = rules[index] ?: error("missing rule no index")
-            when {
-                pattern.matches(regex) -> rule.value = pattern.substring(1, pattern.lastIndex)
-                pattern.contains(" | ") -> {
-                    val subRules = pattern
-                        .split(" | ")
-                        .map { subRules(rules, it) }
-                    rule.addAllSubRules(subRules)
-                }
-                else -> rule.addSubRules(subRules(rules, pattern))
-            }
-        }
-        val rule8 = rules[8] ?: error("missing rule no. 8")
-        val rules8 = "42 | 42 8"
-            .split(" | ")
-            .map { subRules(rules, it) }
-        rule8.clearSubRules()
-        rule8.addAllSubRules(rules8)
-        val rule11 = rules[11] ?: error("missing rule no. 11")
-        val rules11 = "42 | 42 8"
-            .split(" | ")
-            .map { subRules(rules, it) }
-        rule11.clearSubRules()
-        rule11.addAllSubRules(rules11)
-
-        val matches = (rules[0] ?: error("missing rule no. 0")).matches()
-        val dud = messages.mapNotNull { message ->
-            for (rule in matches) {
-                if (message == rule) return@mapNotNull 1
-            }
-            null
-        }
-        return dud.sum()
+        return countMatches(true)
     }
 
-    private class MessageRule {
-        var value: String? = null
-        private var matches: List<String> = emptyList()
-        val subRules = mutableListOf<List<MessageRule>>()
+    private fun countMatches(specialRules: Boolean): Int {
+        val rules = ruleList.map { line ->
+            val (no, rule) = line.split(": ")
+            no.toInt() to rule.split(" ").toMutableList()
+        }.toMap().toMutableMap()
+        reduceRule(rules, 11, specialRules)
+        for (rule in rules.keys.filter { it != 0 }) {
+            reduceRule(rules, rule, specialRules)
+        }
+        val regex = (rules[0] ?: error("missing rule no 0"))
+            .fold(StringBuilder()) { sb, s -> sb.append(s) }
+            .toString()
+            .toRegex()
+        var matches = 0
+        for (message in messages) {
+            if (message.matches(regex)) matches++
+        }
+        return matches
+    }
 
-        fun matches(): List<String> {
-            matches = when {
-                matches.isNotEmpty() -> return matches
-                subRules.isEmpty() && value == null -> error("broken rule: no subrules and no value")
-                subRules.isEmpty() && value != null -> listOf(value!!)
-                else -> {
-                    evaluateSubRules()
-                }
+    private val tokenRegex = Regex(""""[ab]"""")
+
+    private fun reduceRule(rules: MutableMap<Int, MutableList<String>>, ruleNo: Int, specialRules: Boolean) {
+
+        val rule: MutableList<String> = if (ruleNo == 11 && specialRules) {
+            // assumption: longest message has 88 chars
+            // rule 11 consists of at least 4 chars (11: 42 31 with 42 and 31 at least 2)
+            // worst case for 11: 42 11 31 -> 22x42 and 22x31
+            rules.remove(ruleNo)
+            val tempRule = mutableListOf<String>("(")
+            for (i in 1..22) {
+                tempRule.addAll(listOf("(", "(", "42", ")", "{$i}", "(", "31", ")", "{$i}", ")", "|"))
             }
-            return matches
+            tempRule.removeLast()
+            tempRule.add(")")
+            tempRule
+        } else {
+            rules.remove(ruleNo).apply {
+                when {
+                    isNullOrEmpty() -> return
+                    first().matches(tokenRegex) -> replaceAll { it.substring(1, it.lastIndex) }
+                    size > 1 -> apply { add(0, "("); add(")") }
+                }
+            }!!
+        }
+        if (ruleNo == 8 && specialRules) {
+            rule.add("+")
         }
 
-        private fun evaluateSubRules(): List<String> {
-            return subRules.flatMap { rules -> generateStringPermutations(rules.map { it.matches() }) }
-        }
-
-        fun addSubRules(subRules: List<MessageRule>) {
-            matches = emptyList()
-            this.subRules.add(subRules)
-        }
-
-        fun addAllSubRules(subRules: List<List<MessageRule>>) {
-            matches = emptyList()
-            this.subRules.addAll(subRules)
-        }
-
-        fun clearSubRules() {
-            matches = emptyList()
-            subRules.clear()
+        for ((_, oldRule) in rules) {
+            var index = oldRule.indexOf(ruleNo.toString())
+            while (index > -1) {
+                oldRule.removeAt(index)
+                oldRule.addAll(index, rule)
+                index = oldRule.indexOf(ruleNo.toString())
+            }
         }
     }
 }

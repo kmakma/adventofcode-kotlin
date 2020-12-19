@@ -16,19 +16,29 @@ private fun <E> allPermutations(ordered: List<E> = emptyList(), unordered: List<
     return unordered.flatMap { allPermutations(ordered + it, unordered - it) }
 }
 
-fun generateStringPermutations(lists: List<List<String>>): List<String> {
+fun generateStringPermutations(lists: List<List<String>>, maxStringLength: Int = 0): List<String> {
     val result = mutableListOf<String>()
-    stringPermutations(lists, result, 0, "")
+    stringPermutations(lists, result, 0, "", maxStringLength)
     return result
 }
 
-private fun stringPermutations(lists: List<List<String>>, result: MutableList<String>, depth: Int, current: String) {
-    if (depth == lists.size) {
+private fun stringPermutations(
+    lists: List<List<String>>,
+    result: MutableList<String>,
+    depth: Int,
+    current: String,
+    maxLength: Int
+) {
+    if (depth == lists.size || (maxLength > 0 && current.length >= maxLength)) {
         result.add(current)
         return
     }
+    if (lists[depth].isEmpty()) {
+        stringPermutations(lists, result, depth + 1, current, maxLength)
+        return
+    }
     for (s in lists[depth]) {
-        stringPermutations(lists, result, depth + 1, current + s)
+        stringPermutations(lists, result, depth + 1, current + s, maxLength)
     }
 }
 
