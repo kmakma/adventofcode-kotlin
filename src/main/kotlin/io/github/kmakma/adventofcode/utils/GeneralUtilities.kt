@@ -91,3 +91,11 @@ object StupidBigAssNumberCreator {
         return factorList[index]
     }
 }
+
+fun Iterable<Int>.product(): Long {
+    var product = 1L
+    for (element in this) {
+        product *= element
+    }
+    return product
+}
