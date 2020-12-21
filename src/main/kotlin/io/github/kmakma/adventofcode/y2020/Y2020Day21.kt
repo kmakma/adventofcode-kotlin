@@ -7,74 +7,48 @@ fun main() {
 }
 
 class Y2020Day21 : Day(2020, 21, "Allergen Assessment") {
-    private val allIngredients: MutableList<Pair<List<String>, List<String>>> = mutableListOf()
-    private lateinit var allergeneIngredients: MutableMap<String, Set<String>>
     private lateinit var inputList: List<String>
+    private lateinit var allIngredients: List<String>
+    private lateinit var allergens: Map<String, String>
+
 
     override fun initializeDay() {
         inputList = inputInStringLines()
-        allergeneIngredients = mutableMapOf()
-
-        for (line in inputList) {
-            val allergens = getAllergens(line)
-            val ingredients = getIngredients(line)
-            allIngredients.add(Pair(ingredients, allergens))
+        val ingredientsByAllergens = mutableMapOf<String, Set<String>>()
+        allIngredients = inputList.flatMap { line ->
+            val (ingredients, allergens) = getIngredientsAndAllergens(line)
             for (allergen in allergens) {
-                intersectIngredients(allergen, ingredients)
+                ingredientsByAllergens.merge(allergen, ingredients.toSet(), Set<String>::intersect)
             }
+            return@flatMap ingredients
         }
-
-    }
-
-    private fun getAllergens(line: String): List<String> {
-        val index = line.indexOf("(")
-        if (index > 0) {
-            return line.substring(index + 10, line.lastIndex).split(", ")
-        }
-        return emptyList()
-    }
-
-    private fun getIngredients(line: String): List<String> {
-        val index = line.indexOf(" (")
-        if (index > 0) {
-            return line.substring(0, index).split(" ")
-        }
-        return line.split(" ")
-    }
-
-    private fun intersectIngredients(allergen: String, ingredients: List<String>): Set<String> {
-        val newIngredients = allergeneIngredients[allergen]?.intersect(ingredients) ?: ingredients.toSet()
-        allergeneIngredients[allergen] = newIngredients
-        return newIngredients
-    }
-
-    private fun simplifyAllergenIngredients(): Map<String, String> {
-        val allgenIng = mutableMapOf<String, String>()
-        while (allgenIng.size < allergeneIngredients.size) {
-            allergeneIngredients.mapValues { (allergen, ingredients) ->
-                if (ingredients.size == 1) {
-                    allgenIng.putIfAbsent(allergen, ingredients.first())
-                    return@mapValues ingredients
-                } else {
-                    val newIng = ingredients.filter { !allgenIng.values.contains(it) }
-                    if (newIng.size == 1) allgenIng.put(allergen, newIng.first())
-                    return@mapValues newIng
+        allergens = mutableMapOf<String, String>().apply {
+            while (ingredientsByAllergens.isNotEmpty()) {
+                val definiteAllergens = ingredientsByAllergens
+                    .filter { (_, ingredients) -> ingredients.size == 1 }
+                    .mapValues { (_, ingredients) -> ingredients.first() }
+                putAll(definiteAllergens)
+                definiteAllergens.keys.forEach { ingredientsByAllergens.remove(it) }
+                val knownIngredients = definiteAllergens.values
+                ingredientsByAllergens.replaceAll { _, ingredients ->
+                    ingredients.filter { !knownIngredients.contains(it) }.toSet()
                 }
             }
         }
-        return allgenIng
+    }
+
+    private fun getIngredientsAndAllergens(line: String): Pair<List<String>, List<String>> {
+        val (ingredients, allergens) = line.removeSuffix(")").split(" (contains ")
+        return Pair(ingredients.split(" "), allergens.split(", "))
     }
 
     override suspend fun solveTask1(): Any? {
-        val allergenIng = allergeneIngredients.values.flatten()
-        val a = allIngredients.flatMap { it.first }.filter { !allergenIng.contains(it) }
-        return a.size
+        return with(allergens.values) { allIngredients.filter { !contains(it) } }.size
     }
 
     override suspend fun solveTask2(): Any? {
-        val allgenIng = simplifyAllergenIngredients()
         val sb = StringBuilder()
-        allgenIng.keys.sorted().forEach { sb.append("${allgenIng[it]},") }
+        allergens.keys.sorted().forEach { sb.append("${allergens[it]},") }
         return sb.removeSuffix(",")
     }
 }
