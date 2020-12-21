@@ -92,7 +92,17 @@ object StupidBigAssNumberCreator {
     }
 }
 
+@JvmName("productOfInt")
 fun Iterable<Int>.product(): Long {
+    var product = 1L
+    for (element in this) {
+        product *= element
+    }
+    return product
+}
+
+@JvmName("productOfLong")
+fun Iterable<Long>.product(): Long {
     var product = 1L
     for (element in this) {
         product *= element

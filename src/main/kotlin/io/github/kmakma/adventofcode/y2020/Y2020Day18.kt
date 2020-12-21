@@ -1,6 +1,7 @@
 package io.github.kmakma.adventofcode.y2020
 
 import io.github.kmakma.adventofcode.utils.Day
+import io.github.kmakma.adventofcode.utils.product
 
 fun main() {
     Y2020Day18().solveAndPrint()
@@ -68,6 +69,6 @@ class Y2020Day18 : Day(2020, 18, "Operation Order") {
                     .map { it.toLong() }
                     .sum()
             }
-            .reduce { acc, l -> acc * l }
+            .product()
     }
 }
