@@ -1,7 +1,7 @@
 package io.github.kmakma.adventofcode.y2020
 
 import io.github.kmakma.adventofcode.utils.Day
-import java.util.*
+import io.github.kmakma.adventofcode.utils.product
 
 fun main() {
     Y2020Day23().solveAndPrint()
@@ -10,70 +10,86 @@ fun main() {
 class Y2020Day23 : Day(2020, 23, "Crab Cups") {
 
     private lateinit var inputLine: List<Int>
-    private var min: Int = -1
 
     override fun initializeDay() {
         inputLine = inputInOneLine().map { Character.getNumericValue(it) }
-        min = inputLine.minOrNull() ?: error("no min value")
     }
 
     override suspend fun solveTask1(): Any {
-        val cups = inputLine.toMutableList()
-        var current = 0
-        for (i in 1..100) {
-            playRound(cups, current)
-            current = (current + 1) % cups.size
-        }
-        Collections.rotate(cups, -cups.indexOf(1))
-        cups.removeFirst()
-        return cups.joinToString("")
+        val cups = buildMap()
+        playGame(cups, 100)
+        return listAfter1(cups).joinToString("")
     }
 
-    override suspend fun solveTask2(): Any? {
-        return null
-        val cups = inputLine.toMutableList()
-        var last = cups.maxOrNull() ?: error("no max value")
-        while (cups.size < 1000000) {
-            cups.add(++last)
-        }
-        var current = 0
-        for (i in 1..10000000) {
-            playRound(cups, current)
-            current = (current + 1) % cups.size
-        }
-        Collections.rotate(cups, -cups.indexOf(1))
-        cups.removeFirst()
-        return Pair(cups[0], cups[1])
+    override suspend fun solveTask2(): Any {
+        val cups = buildMap(1000000)
+        playGame(cups, 10000000)
+        return listAfter1(cups, 2).product()
     }
 
-    private fun playRound(cups: MutableList<Int>, currentIndex: Int) {
-        val current = cups[currentIndex]
-        var dest = current
-
-        val nextThree = pickUp(cups, currentIndex)
-        var indexNextDest: Int = -1
-
-        while (indexNextDest < 0) {
-            dest = if (dest - 1 < min) cups.maxOrNull() ?: error("no max value") else dest - 1
-            indexNextDest = cups.indexOf(dest)
-            if (indexNextDest >= 0) {
-                cups.addAll(indexNextDest + 1, nextThree)
-            }
+    private fun buildMap(minSize: Int = 0): MutableMap<Int, Int> {
+        val map = mutableMapOf<Int, Int>()
+        val first = inputLine.first()
+        var last = first
+        var max = first
+        for (current in inputLine) {
+            map[last] = current
+            last = current
+            if (current > max) max = current
         }
-        Collections.rotate(cups, currentIndex - cups.indexOf(current))
+        while (map.size < minSize - 1) { // -1 because of the last entry
+            map[last] = ++max
+            last = max
+        }
+        map[last] = first
+        return map
     }
 
-    private fun pickUp(cups: MutableList<Int>, index: Int): List<Int> {
-        val rot = if (index + 3 > cups.lastIndex) {
-            cups.lastIndex - (index + 3)
-        } else {
-            0
+    private fun playGame(cups: MutableMap<Int, Int>, rounds: Int) {
+        var current = inputLine.first()
+        for (i in 1..rounds) {
+            current = playRound(cups, current)
         }
-        Collections.rotate(cups, rot)
-        return listOf(
-            cups.removeAt(index + rot + 1),
-            cups.removeAt(index + rot + 1),
-            cups.removeAt(index + rot + 1)
-        )
+    }
+
+    private fun playRound(cups: MutableMap<Int, Int>, current: Int): Int {
+        val nextThree = removeNextThree(cups, current)
+        var dest = current - 1
+        while (!cups.containsKey(dest)) {
+            if ((--dest) < 1) dest = cups.keys.maxOrNull() ?: error("no max value")
+        }
+        insertList(cups, dest, nextThree)
+        return cups[current]!!
+    }
+
+    private fun removeNextThree(cups: MutableMap<Int, Int>, current: Int): List<Int> {
+        val result = mutableListOf<Int>()
+        for (i in 1..3) {
+            val next = cups[current]!!
+            val temp = cups.remove(next)!!
+            cups[current] = temp
+            result.add(next)
+        }
+        return result
+    }
+
+    private fun insertList(cups: MutableMap<Int, Int>, dest: Int, list: List<Int>) {
+        val last = cups[dest]!!
+        var current = dest
+        for (next in list) {
+            cups[current] = next
+            current = next
+        }
+        cups[current] = last
+    }
+
+    private fun listAfter1(cups: MutableMap<Int, Int>, limit: Int = 0): List<Int> {
+        val result = mutableListOf<Int>()
+        var current: Int = cups[1]!!
+        while (current != 1 && (limit < 1 || result.size < limit)) {
+            result.add(current)
+            current = cups[current]!!
+        }
+        return result
     }
 }
