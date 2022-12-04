@@ -3,7 +3,6 @@ package io.github.kmakma.adventofcode.y2019.utils
 import io.github.kmakma.adventofcode.y2019.utils.AsyncComputerStatus.*
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.OpCode.*
 import io.github.kmakma.adventofcode.y2019.utils.IntcodeComputer.ParameterMode.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 internal class IntcodeComputer(
     private val initialIntcodeProgram: List<Long>,
@@ -22,7 +21,6 @@ internal class IntcodeComputer(
 
     // internal functions
 
-    @ExperimentalCoroutinesApi
     internal suspend fun run(): IntcodeComputer {
         when (computerStatus) {
             IDLE -> computerStatus = RUNNING
@@ -154,7 +152,6 @@ internal class IntcodeComputer(
         instructionPointer += MUL.values
     }
 
-    @ExperimentalCoroutinesApi
     private suspend fun readInput() {
         if (input.isClosedForReceive()) error("Input is closed and there are no values left")
         currentProgramMap[pointer(1, true)] = input.receive()

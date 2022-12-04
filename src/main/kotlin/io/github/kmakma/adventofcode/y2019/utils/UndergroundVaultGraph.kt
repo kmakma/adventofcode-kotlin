@@ -45,7 +45,7 @@ internal class UndergroundVaultGraph {
 
 private class GraphBuilder(private val inputLines: List<List<Char>>) {
     val graph = UndergroundVaultGraph()
-    var buildingNodeGraph = mutableMapOf<Vector2D, BuildingNode>()
+    private var buildingNodeGraph = mutableMapOf<Vector2D, BuildingNode>()
 
     fun build() {
         buildDistance1Graph()

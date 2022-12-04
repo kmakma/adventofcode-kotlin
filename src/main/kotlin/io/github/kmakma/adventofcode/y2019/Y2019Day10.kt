@@ -28,21 +28,21 @@ internal class Y2019Day10 : Y2019Day(10, "Monitoring Station") {
     }
 
     override suspend fun solveTask1(): Int {
-        return detectedAsteroids.max() ?: 0
+        return detectedAsteroids.maxOrNull() ?: 0
     }
 
     override suspend fun solveTask2(): Int? {
-        val stationAsteroid = asteroidList[detectedAsteroids.indexOf(detectedAsteroids.max() ?: 0)]
+        val stationAsteroid = asteroidList[detectedAsteroids.indexOf(detectedAsteroids.maxOrNull() ?: 0)]
         // map of vectors grouped by shortest vector; e.g. ((1,2),(2,4),(3,6)..) at index (1,2)
         val vectorsToAsteroids: MutableMap<Vector2D, MutableList<Vector2D>> =
             (asteroidList - stationAsteroid)
                 .map { (it - stationAsteroid) }
                 .groupBy { it.shortest() }
-                .mapValues { it.value.sortedWith(Comparator { a, b -> clockwiseCompare(a, b) }).toMutableList() }
+                .mapValues { it.value.sortedWith { a, b -> clockwiseCompare(a, b) }.toMutableList() }
                 .toMutableMap()
         // sort keys clockwise (actually not clockwise, since it starts at (0,-1) and goes counter-clockwise)
         val sortedKeys = (vectorsToAsteroids.keys)
-            .sortedWith(Comparator { a, b -> clockwiseCompare(a, b) })
+            .sortedWith { a, b -> clockwiseCompare(a, b) }
             .toMutableSet()
         // laser show, until 200 destroyed
         var destroyed = 0

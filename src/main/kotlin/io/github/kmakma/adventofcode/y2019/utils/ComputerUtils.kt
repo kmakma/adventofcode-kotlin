@@ -28,7 +28,7 @@ internal class ComputerIO(input: List<Long>? = null, capacity: Int = Channel.UNL
 
     internal fun close() = channel.close()
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     internal fun isClosedForReceive() = channel.isClosedForReceive
 }
 

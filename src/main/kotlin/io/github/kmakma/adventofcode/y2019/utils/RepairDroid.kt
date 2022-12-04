@@ -24,7 +24,7 @@ internal class RepairDroid(intcodeProgram: List<Long>) {
 
     fun distanceToO2System(): Int = distanceFromO2[Vector2D(0, 0)] ?: -1
 
-    fun timeToFillWithO2(): Int = distanceFromO2.values.max() ?: -1
+    fun timeToFillWithO2(): Int = distanceFromO2.values.maxOrNull() ?: -1
 
 
     private fun mapSurroundings(direction: Direction? = null) {

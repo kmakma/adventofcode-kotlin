@@ -6,7 +6,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 internal class ControllerY2019 : YearController() {
     override val year: Int = 2019
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getDay(day: Int): Y2019Day? {
         require(day in 1..25)
         return when (day) {

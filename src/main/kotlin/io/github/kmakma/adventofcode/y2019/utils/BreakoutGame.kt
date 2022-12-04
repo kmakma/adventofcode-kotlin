@@ -114,8 +114,8 @@ internal class BreakoutGame(arcadeProgram: List<Long>) {
     }
 
     private fun printGame() {
-        val minV = game.keys.min()
-        val maxV = game.keys.max()
+        val minV = game.keys.minOrNull()
+        val maxV = game.keys.maxOrNull()
         if (minV == null || maxV == null) return
         for (y in minV.y..maxV.y) {
             for (x in minV.x..maxV.x) {
